@@ -1,0 +1,84 @@
+/* Çiftçi Fare — arkadaş ziyareti ve anlatım (js/ciftlik/ziyaret.js, anlatim.js, kabuk.js rozeti).
+   Çocuk ekranı: YAZI YOK, RAKAM YOK. Kartlar ve düğmeler resimli, adları aria-label'da.
+   Büyük hedefler: arkadaş kartı ≥170 px (önerilen üçü daha büyük), çıkartma ≥120 px,
+   'Atla' ve 'Vazgeç' ≥88 px. Katman sırası: alt şerit (5) < ekranlar (6) < üst düğmeler (7)
+   < iş katmanı (60) < ziyaret katmanları (65) < PIN ve panel (70). */
+
+/* Ekran okuyucu için anlatım (görünmez; ekranda yazı yok) */
+.anlatim-canli{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Misafirken üstte arkadaşın sembolü */
+.ziyaret-rozet{position:absolute;z-index:7;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);
+ width:96px;height:96px;padding:8px;border-radius:50%;border:7px solid var(--renk,#d9714f);background:#fffdf4;
+ box-shadow:0 0 0 4px #fff,0 8px 22px #33403a33;pointer-events:none}
+.ziyaret-rozet[hidden]{display:none}
+.ziyaret-rozet svg{width:100%;height:100%;display:block}
+
+/* Katman */
+.ziyaret-katman{position:absolute;inset:0;z-index:65;display:grid;place-items:center;overflow:auto;
+ padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+ background:#26332c73;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:ziyaret-gir .24s ease-out}
+@keyframes ziyaret-gir{from{opacity:0}to{opacity:1}}
+.ziyaret-kart{display:grid;gap:18px;justify-items:center;width:min(980px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;
+ padding:18px 24px 26px;border-radius:36px;border:4px solid #fff;background:linear-gradient(180deg,#fff4d6,#fbf6e6 60%,#e5eecb);
+ box-shadow:0 26px 64px #16211455;animation:ziyaret-kart .3s cubic-bezier(.3,1.3,.5,1)}
+@keyframes ziyaret-kart{from{transform:translateY(24px) scale(.96)}to{transform:none}}
+.ziyaret-ust{justify-self:stretch;display:flex;justify-content:flex-end}
+.ziyaret-kapat{width:88px;height:88px;padding:0;border-radius:50%;border:4px solid #fff;background:#fffdf4;color:#6b5a48;
+ display:grid;place-items:center;box-shadow:0 5px 0 #dccfab;cursor:pointer;transition:transform .12s}
+.ziyaret-kapat svg{width:38px;height:38px}
+
+/* Arkadaş kartları: yalnız sembol, halka arkadaşın şapka rengi */
+.ziyaret-oneriler{display:flex;flex-wrap:wrap;justify-content:center;gap:22px}
+.ziyaret-hepsi{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.ziyaret-hepsi[hidden]{display:none}
+.ziyaret-arkadas{display:grid;place-items:center;width:176px;height:176px;padding:16px;cursor:pointer;border-radius:34px;
+ border:9px solid var(--renk,#d9714f);background:#fffdf4;box-shadow:0 8px 22px #33403a2e;transition:transform .12s}
+.ziyaret-arkadas.onerilen{width:220px;height:220px;border-width:12px}
+.ziyaret-sembol{display:block;width:100%;height:100%}
+.ziyaret-sembol svg{width:100%;height:100%;display:block}
+.ziyaret-baska{width:120px;height:120px;padding:12px;border-radius:50%;border:5px solid #fff;background:#fff7dc;cursor:pointer;
+ box-shadow:0 6px 0 #dccfab,0 8px 22px #33403a26;transition:transform .12s}
+.ziyaret-baska[hidden]{display:none}
+.ziyaret-baska svg{width:100%;height:100%;display:block}
+
+/* Çıkartma seçimi: 8 sabit çıkartma */
+.hediye-izgara{display:grid;grid-template-columns:repeat(4,minmax(120px,150px));gap:18px;justify-content:center}
+.hediye-dugme{width:100%;aspect-ratio:1/1;min-width:120px;min-height:120px;padding:14px;cursor:pointer;border-radius:50%;
+ border:6px solid #fff;background:#fffdf4;box-shadow:0 6px 0 #dccfab,0 8px 22px #33403a26;transition:transform .12s}
+.hediye-dugme svg{width:100%;height:100%;display:block}
+
+/* 'Sen yokken' */
+.sen-yokken .ziyaret-kart{width:auto;grid-template-columns:1fr auto;align-items:center;gap:22px 28px;padding:22px 26px}
+.sen-yokken-liste{display:grid;gap:14px}
+.sen-yokken-kim{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:10px 16px;border-radius:28px;background:#ffffffb3}
+.sen-yokken-kim .ziyaret-sembol{width:128px;height:128px;padding:10px;border-radius:50%;border:8px solid var(--renk,#b9b3a7);background:#fffdf4}
+.sen-yokken-hediye,.sen-yokken-sula{display:block;width:104px;height:104px;padding:8px;border-radius:50%;background:#fffdf4;border:4px solid #fff;
+ box-shadow:0 5px 0 #dccfab;animation:cikartma-gel .5s cubic-bezier(.3,1.6,.5,1) both}
+.sen-yokken-hediye:nth-child(3){animation-delay:.12s}
+.sen-yokken-hediye:nth-child(4){animation-delay:.24s}
+.sen-yokken-hediye svg,.sen-yokken-sula svg{width:100%;height:100%;display:block}
+@keyframes cikartma-gel{from{transform:scale(.3) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
+.sen-yokken-atla{width:110px;height:110px;padding:14px;border-radius:50%;border:6px solid #f2c14e;background:#fff7dc;cursor:pointer;
+ box-shadow:0 6px 0 #dccfab;transition:transform .12s}
+.sen-yokken-atla svg{width:100%;height:100%;display:block}
+
+.ziyaret-arkadas:active,.ziyaret-baska:active,.hediye-dugme:active,.sen-yokken-atla:active,.ziyaret-kapat:active{transform:scale(.93)}
+.ziyaret-katman button:focus-visible{outline:5px solid #d5a94d;outline-offset:4px}
+
+/* Hayvan sev: avlunun üstünde süzülen kalpler (dünya balonlarıyla aynı katman) */
+.sev-kalpler{position:absolute;left:0;top:0;z-index:4;pointer-events:none;width:0;height:0}
+.sev-kalpler i{position:absolute;left:-22px;top:-22px;width:44px;height:44px;opacity:0;animation:kalp-uc 1.4s ease-out forwards}
+.sev-kalpler i svg{width:100%;height:100%;display:block}
+@keyframes kalp-uc{0%{transform:translate(0,0) scale(.4);opacity:0}20%{opacity:1}100%{transform:translate(var(--dx,0),-120px) scale(1.1);opacity:0}}
+
+@media(max-width:760px){
+ .hediye-izgara{grid-template-columns:repeat(2,minmax(120px,150px))}
+ .ziyaret-arkadas.onerilen{width:176px;height:176px}
+ .sen-yokken .ziyaret-kart{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+ .ziyaret-katman,.ziyaret-kart,.sen-yokken-hediye,.sen-yokken-sula{animation:none}
+ .sev-kalpler i{animation:none;opacity:1;transform:translate(var(--dx,0),-40px)}
+ .ziyaret-arkadas,.ziyaret-baska,.hediye-dugme,.sen-yokken-atla,.ziyaret-kapat{transition:none}
+}

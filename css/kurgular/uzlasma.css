@@ -1,0 +1,141 @@
+/* uzlasma kurgusu (İki Keçi) — yalnız bu kurgunun ekranları.
+   İki yakanın rengi: --uz-ak (Ak'ın mavi atkısı), --uz-kara (Kara'nın kırmızı tasması). */
+
+.uzlasma-sayfasi, .uzlasma-odul { --uz-ak: #7fb3c8; --uz-kara: #d65a4a; --uz-ortak: #d9a441; }
+
+/* ——— Sıradaki iş kartı: kimin sırası olduğu rengiyle söylenir ——— */
+.uzlasma-kart { border-width: 1px 1px 1px 6px; border-style: solid; transition: border-color .3s, background .3s }
+.uzlasma-kart.sira-ak { border-color: #d7e8ef #d7e8ef #d7e8ef var(--uz-ak); background: #f4fafc }
+.uzlasma-kart.sira-kara { border-color: #f1d9d4 #f1d9d4 #f1d9d4 var(--uz-kara); background: #fdf5f3 }
+.uzlasma-kart.sira-ortak { border-color: #eedfb9 #eedfb9 #eedfb9 var(--uz-ortak); background: #fdf8ea }
+.uzlasma-kart-ust { display: flex; align-items: center; gap: 9px }
+.uzlasma-kart-yuz { width: 42px; height: 42px; flex: none; display: block }
+.uzlasma-kart-yuz svg { width: 100%; height: 100% }
+.uzlasma-kart.sira-ak .eyebrow { color: #4f8aa1 }
+.uzlasma-kart.sira-kara .eyebrow { color: #b8473a }
+.uzlasma-kart.sira-ortak .eyebrow { color: #a27a23 }
+.uzlasma-bekleyen { display: flex; align-items: center; gap: 7px; font-size: 10px; color: #7c8577; margin-top: 10px; font-style: italic }
+.uzlasma-bekleyen svg { width: 14px; height: 14px; flex: none; color: #a4b590 }
+
+/* ——— Haritanın üstündeki sıra bayrağı ——— */
+.uzlasma-bayrak { position: absolute; left: 50%; top: 22px; transform: translateX(-50%); display: flex; align-items: center; gap: 9px;
+  padding: 6px 18px 6px 6px; border-radius: 999px; background: #fffdf5ee; border: 2px solid var(--uz-ortak);
+  font-size: 13px; font-weight: 750; color: #4d5a4a; pointer-events: none; z-index: 3; box-shadow: 0 6px 18px #2d3b2a1a }
+.uzlasma-bayrak.sira-ak { border-color: var(--uz-ak) }
+.uzlasma-bayrak.sira-kara { border-color: var(--uz-kara) }
+.uzlasma-bayrak-yuz { width: 38px; height: 38px; display: block }
+.uzlasma-bayrak-yuz svg { width: 100%; height: 100% }
+.uzlasma-bayrak.devir { animation: uz-devir 1.6s cubic-bezier(.3, 1.4, .5, 1) both }
+@keyframes uz-devir {
+  0% { transform: translateX(-50%) translateY(-24px) scale(.7); opacity: 0 }
+  35% { transform: translateX(-50%) translateY(0) scale(1.12); opacity: 1 }
+  55% { transform: translateX(-50%) rotate(-3deg) scale(1) }
+  75% { transform: translateX(-50%) rotate(2deg) }
+  100% { transform: translateX(-50%) rotate(0) }
+}
+
+/* ——— Durak sonrası: köprü haberi (kim, kime yardım etti) ——— */
+.uzlasma-haber { position: absolute; left: 50%; top: 84px; transform: translateX(-50%); z-index: 3; pointer-events: none;
+  display: flex; align-items: center; gap: 12px; width: max-content; max-width: min(460px, calc(100% - 32px));
+  padding: 10px 18px 10px 10px; border-radius: 18px; background: #fffdf5f2; border: 2px solid var(--uz-ortak);
+  box-shadow: 0 10px 26px #2d3b2a22; animation: uz-haber .7s .25s cubic-bezier(.3, 1.3, .5, 1) both;
+  transition: opacity .8s, transform .8s }
+.uzlasma-haber.sira-ak { border-color: var(--uz-ak) }
+.uzlasma-haber.sira-kara { border-color: var(--uz-kara) }
+.uzlasma-haber.sonuyor { opacity: 0; transform: translateX(-50%) translateY(-10px) }
+.uzlasma-haber-yuz { width: 46px; height: 46px; flex: none; display: block }
+.uzlasma-haber-yuz svg { width: 100%; height: 100% }
+.uzlasma-haber strong { display: block; font-size: 14px; color: #3f4a3c }
+.uzlasma-haber.sira-ak strong { color: #4f8aa1 }
+.uzlasma-haber.sira-kara strong { color: #b8473a }
+.uzlasma-haber p { margin: 3px 0 0; font-size: 12px; line-height: 1.35; color: #5f6a5a }
+@keyframes uz-haber { from { opacity: 0; transform: translateX(-50%) translateY(-16px) scale(.92) } to { opacity: 1; transform: translateX(-50%) } }
+
+/* ——— Alt bar: iki uçtan ortaya büyüyen iki çubuk ——— */
+.uzlasma-alt { flex-wrap: wrap; gap: 14px 26px }
+.uzlasma-kopru { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 12px; flex: 1 1 460px; min-width: 300px }
+.uzlasma-uc { display: flex; align-items: center; gap: 8px; opacity: .72; transition: opacity .3s }
+.uzlasma-uc.simdi { opacity: 1 }
+.uzlasma-uc.kara { flex-direction: row-reverse; text-align: right }
+.uzlasma-uc-yuz { width: 40px; height: 40px; display: block; flex: none }
+.uzlasma-uc-yuz svg { width: 100%; height: 100% }
+.uzlasma-uc strong { display: block; font-size: 13px }
+.uzlasma-uc small { display: block; font-size: 10px; color: #8a9385; margin-top: 2px; white-space: nowrap }
+.uzlasma-uc.ak.simdi strong { color: #4f8aa1 }
+.uzlasma-uc.kara.simdi strong { color: #b8473a }
+.uzlasma-serit { position: relative; height: 14px; border-radius: 8px; background: repeating-linear-gradient(90deg, #e6dcc6 0 14px, #ddd1b6 14px 16px); margin: 0 12px }
+.uzlasma-dolgu { position: absolute; top: 0; bottom: 0; border-radius: 8px; transition: width .6s cubic-bezier(.3, 1.2, .5, 1) }
+.uzlasma-dolgu.ak { left: 0; background: var(--uz-ak) }
+.uzlasma-dolgu.kara { right: 0; background: var(--uz-kara) }
+.uzlasma-isaret { position: absolute; top: 50%; width: 34px; height: 34px; transform: translate(-50%, -62%); transition: left .6s cubic-bezier(.3, 1.2, .5, 1); z-index: 2 }
+.uzlasma-isaret svg { width: 100%; height: 100% }
+.uzlasma-isaret.ak svg { transform: scaleX(-1) }
+.uzlasma-bulusma { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; transform: translate(-50%, -50%); background: #fffdf5;
+  border: 2px dashed #c9b48a; border-radius: 50%; padding: 3px; z-index: 1 }
+.uzlasma-bulusma svg { width: 100%; height: 100% }
+.uzlasma-bulusma.tamam { border-style: solid; border-color: var(--uz-ortak); background: #fff4d6 }
+.uzlasma-sayi { font-size: 12px; font-weight: 700; color: #8a9a80; min-width: 48px; text-align: right }
+/* Az önce yardım edilen yakanın çubuğu uzarken parlar */
+.uzlasma-serit.uzuyor-ak .uzlasma-dolgu.ak, .uzlasma-serit.uzuyor-kara .uzlasma-dolgu.kara { animation: uz-parla 1.4s .2s ease-out both }
+.uzlasma-serit.uzuyor-ak .uzlasma-isaret.ak, .uzlasma-serit.uzuyor-kara .uzlasma-isaret.kara { animation: uz-adim .9s .15s ease-in-out 2 }
+@keyframes uz-parla { 0%, 100% { box-shadow: 0 0 0 0 #fff0 } 40% { box-shadow: 0 0 0 5px #ffffffb0, 0 0 14px 4px #f3d27a } }
+@keyframes uz-adim { 0%, 100% { transform: translate(-50%, -62%) } 50% { transform: translate(-50%, -84%) } }
+
+/* ——— Sıra şeridi ——— */
+.uzlasma-sira-seridi { display: flex; flex-direction: column; gap: 6px }
+.uzlasma-sira-seridi .eyebrow { font-size: 8px; letter-spacing: 1.4px }
+.uzlasma-cipler { display: flex; gap: 5px; list-style: none; margin: 0; padding: 0 }
+.sira-cip { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 44px; padding: 4px 2px 3px; border-radius: 10px;
+  background: #f1efe4; border: 1.5px solid transparent; opacity: .78 }
+.sira-cip.simdi { opacity: 1; transform: translateY(-2px); box-shadow: 0 4px 10px #2d3b2a1a }
+.sira-cip.sira-ak { border-color: color-mix(in srgb, var(--uz-ak) 60%, transparent) }
+.sira-cip.sira-kara { border-color: color-mix(in srgb, var(--uz-kara) 55%, transparent) }
+.sira-cip.sira-ortak { border-color: color-mix(in srgb, var(--uz-ortak) 60%, transparent) }
+.sira-cip.simdi.sira-ak { background: #e7f2f6; border-color: var(--uz-ak) }
+.sira-cip.simdi.sira-kara { background: #fbe9e5; border-color: var(--uz-kara) }
+.sira-cip.simdi.sira-ortak { background: #fbf1d8; border-color: var(--uz-ortak) }
+.sira-cip-yuz { width: 26px; height: 26px; display: block }
+.sira-cip-yuz svg { width: 100%; height: 100% }
+.sira-cip-ad { font-size: 9px; font-weight: 700; color: #6d7768 }
+
+/* ——— Bölüm sonu: ikisinin köprüdeki yeri ——— */
+.uzlasma-sahne { position: relative; width: min(560px, 90vw); height: 190px; margin: 0 auto 18px; border-radius: 22px; overflow: hidden;
+  background: linear-gradient(#e8f3f6, #f5f1e4 62%) }
+.uzlasma-sahne i { position: absolute; display: block }
+.uz-yaka { bottom: 0; width: 30%; height: 78px; background: #a9c98a; border-top: 10px solid #8fb46f }
+.uz-yaka.bati { left: 0; border-radius: 0 60px 0 0 }
+.uz-yaka.dogu { right: 0; border-radius: 60px 0 0 0 }
+.uz-dere { left: 26%; right: 26%; bottom: 0; height: 52px; background: repeating-linear-gradient(90deg, #6bbfc8 0 30px, #7fcad2 30px 44px);
+  animation: uz-akis 3s linear infinite }
+@keyframes uz-akis { to { background-position: 44px 0 } }
+.uz-kutuk { left: 6%; right: 6%; bottom: 74px; height: 16px; border-radius: 9px; background: linear-gradient(#c49a66, #9c7446);
+  box-shadow: inset 0 -3px 0 #86603a }
+.uzlasma-sahne.genis .uz-kutuk { height: 26px; bottom: 68px; background: repeating-linear-gradient(90deg, #d7a96c 0 22px, #c79a5f 22px 24px);
+  box-shadow: inset 0 -4px 0 #a8804e }
+.uz-korkuluk { left: 8%; right: 8%; bottom: 96px; height: 26px; border-top: 4px solid #8e6a45;
+  background: repeating-linear-gradient(90deg, #8e6a45 0 4px, transparent 4px 46px) }
+.uz-keci { position: absolute; bottom: 79px; width: 86px; height: 84px; transform: translateX(-50%); transition: left .8s }
+.uzlasma-sahne.genis .uz-keci { bottom: 84px }
+.uz-keci svg { width: 100%; height: 100% }
+.uz-keci.ak svg { transform: scaleX(-1) }
+.uzlasma-sahne.atlayis .uz-keci.kara { animation: uz-zipla 1.4s .3s cubic-bezier(.3, 1.3, .5, 1) both }
+@keyframes uz-zipla { 0% { left: 70%; bottom: 79px } 45% { bottom: 150px } 100% { left: 22%; bottom: 79px } }
+.uz-yay { left: 26%; width: 44%; bottom: 110px; height: 60px; border: 3px dashed #c9b48a; border-bottom: 0; border-radius: 50% 50% 0 0; opacity: .7 }
+
+@media (max-width: 760px) {
+  .uzlasma-kopru { grid-template-columns: auto 1fr auto; min-width: 0; flex-basis: 100% }
+  .uzlasma-sayi { display: none }
+  .uzlasma-uc small { display: none }
+  .uzlasma-bayrak { font-size: 11px; top: 64px; padding: 4px 12px 4px 4px }
+  .uzlasma-bayrak-yuz { width: 28px; height: 28px }
+  .uzlasma-haber { top: 110px; padding: 7px 12px 7px 7px }
+  .uzlasma-haber-yuz { width: 34px; height: 34px }
+  .uzlasma-haber p { font-size: 11px }
+  .sira-cip { width: 38px }
+  .uzlasma-sahne { height: 150px }
+  .uz-keci { width: 64px; height: 62px }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uzlasma-bayrak.devir, .uzlasma-sahne.atlayis .uz-keci.kara, .uz-dere, .uzlasma-haber,
+  .uzlasma-serit .uzlasma-dolgu, .uzlasma-serit .uzlasma-isaret { animation: none }
+}

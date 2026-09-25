@@ -1,0 +1,157 @@
+/* deneme kurgusu (Tilki ile Üzümler) — yalnız bu kurgunun ekranları.
+   Tahtanın ana ekseni DİKEY: sağda boydan boya bir tırmanış direği.
+   --dn-renk: bölümün basamak rengi (zıplama → taş → sandık → merdiven). */
+
+.deneme-sayfasi, .deneme-odul { --dn-renk: #e08a4a; --dn-salkim: #7b4f9d; --dn-toprak: #b98649 }
+
+/* ——— Yerleşim: panel | dünya | direk ——— */
+.harita-icerik.deneme-icerik { grid-template-columns: 300px 1fr 200px }
+.deneme-kule { position: relative; display: flex; flex-direction: column; gap: 10px; min-height: 0; z-index: 2;
+  padding: 16px 14px 18px; border-left: 1px solid #e3dccb;
+  background: linear-gradient(#f3eef8 0%, #faf6ee 22%, #f8f2e4 78%, #efe3cc 100%) }
+
+/* Tepe: salkım ve kalan basamak */
+.deneme-hedef { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 16px; background: #fffdf7;
+  border: 1.5px dashed #cdb9dc; box-shadow: 0 6px 16px #3d2f4a12 }
+.deneme-hedef-ikon { width: 52px; height: 52px; flex: none; display: block; animation: dn-sallan 3.2s ease-in-out infinite; transform-origin: 50% 8% }
+.deneme-hedef-ikon svg { width: 100%; height: 100% }
+.deneme-hedef strong { display: block; font-size: 30px; line-height: 1; font-weight: 800; color: var(--dn-salkim); letter-spacing: -1px }
+.deneme-hedef small { display: block; font-size: 10px; font-weight: 650; color: #857a8f; margin-top: 3px; line-height: 1.3 }
+.deneme-hedef.ulasildi { border-style: solid; border-color: var(--dn-salkim); background: #f4ecfa }
+@keyframes dn-sallan { 0%, 100% { transform: rotate(-5deg) } 50% { transform: rotate(5deg) } }
+
+/* Direk: basamaklar aşağıdan yukarı */
+.deneme-direk { position: relative; flex: 1; min-height: 150px; margin: 4px 6px 0 44px }
+.deneme-basamaklar { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column-reverse }
+.deneme-basamak { flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; position: relative }
+.deneme-basamak-govde { display: block; transition: background .3s, opacity .3s, transform .3s }
+.deneme-basamak:not(.gecildi):not(.simdi) .deneme-basamak-govde { opacity: .38; filter: grayscale(.6) }
+
+/* 1 · zıplama izi: kesik kesik bir yay */
+.deneme-basamak.kat-0 .deneme-basamak-govde { width: 46%; height: 70%; max-height: 10px; border: 2.5px dashed #e08a4a; border-bottom: 0; border-radius: 14px 14px 0 0 }
+.deneme-basamak.kat-0.gecildi .deneme-basamak-govde { border-style: solid }
+/* 2 · alıştırma taşı */
+.deneme-basamak.kat-1 .deneme-basamak-govde { width: 54%; height: 72%; max-height: 13px; border-radius: 50% / 60%;
+  background: linear-gradient(#c9cabc, #9fa192); box-shadow: inset 0 -2px 0 #85877a }
+/* 3 · sandık */
+.deneme-basamak.kat-2 .deneme-basamak-govde { width: 62%; height: 82%; max-height: 17px; border-radius: 2px;
+  background: linear-gradient(#ddb074, #b98649); border: 1.5px solid #8f6232; box-shadow: inset 0 -3px 0 #a47340, inset 0 3px 0 #ecca96 }
+/* 4 · merdiven basamağı */
+.deneme-basamak.kat-3 .deneme-basamak-govde { width: 72%; height: 5px; border-radius: 3px; background: #9c6b3e; box-shadow: 0 2px 0 #7a522c }
+.deneme-ray { position: absolute; top: 0; left: 13%; right: 13%; border-left: 4px solid #9c6b3e; border-right: 4px solid #9c6b3e; border-radius: 3px; opacity: .85 }
+
+/* Bölüm sonu basamağı: geniş bir sahanlık */
+.deneme-basamak.sahanlik .deneme-basamak-govde { width: 90%; max-height: 9px; height: 60%; border: 0; border-radius: 6px;
+  background: linear-gradient(90deg, #eadfc6, #d8c7a2); box-shadow: 0 2px 0 #bba77f }
+.deneme-basamak.sahanlik.gecildi .deneme-basamak-govde { background: linear-gradient(90deg, var(--accent, #d9793a), #e8b36e) }
+
+/* Sıradaki basamak parlıyor; en son eklenen büyüyerek beliriyor */
+.deneme-basamak.simdi .deneme-basamak-govde { opacity: 1; filter: none; outline: 2.5px solid #ffd76a; outline-offset: 2px; animation: dn-nabiz 1.6s ease-in-out infinite }
+@keyframes dn-nabiz { 50% { outline-color: #ffeeb3; transform: scale(1.06) } }
+.deneme-basamak.yeni .deneme-basamak-govde { animation: dn-yeni .9s cubic-bezier(.3, 1.5, .5, 1) both }
+@keyframes dn-yeni { 0% { transform: scale(0) translateY(-10px); opacity: 0 } 100% { transform: none; opacity: 1 } }
+
+/* Bölüm katları: soldaki küçük etiketler */
+.deneme-kat { position: absolute; left: -46px; width: 42px; transform: translateY(50%); display: flex; flex-direction: column; align-items: center;
+  gap: 1px; opacity: .6; pointer-events: none }
+.deneme-kat.simdi { opacity: 1 }
+.deneme-kat-ikon { width: 26px; height: 26px; display: block; border-radius: 50%; background: #fffdf7; box-shadow: 0 2px 6px #3b2f2014 }
+.deneme-kat-ikon svg { width: 100%; height: 100% }
+.deneme-kat small { font-size: 7.5px; font-weight: 750; line-height: 1.1; color: #8b7a66; text-align: center; letter-spacing: .2px }
+
+/* Kızıl: basamağının üstünde; bir önceki basamaktan buraya tırmanır */
+/* En üst basamaklarda başı direğin içinde kalsın: salkım kartının üstüne taşmasın. */
+.deneme-kahraman { --dn-tavan: calc(100% - 50px); position: absolute; left: 50%; width: 58px; height: 56px;
+  bottom: min(calc(var(--dn-simdi) - 6px), var(--dn-tavan)); transform: translateX(-50%);
+  z-index: 3; filter: drop-shadow(0 5px 6px #3b2f201f); pointer-events: none }
+.deneme-kahraman svg { width: 100%; height: 100% }
+.deneme-kahraman.tirmaniyor { animation: dn-tirman 1.1s cubic-bezier(.35, .1, .3, 1) both }
+@keyframes dn-tirman {
+  0% { bottom: min(calc(var(--dn-once) - 6px), var(--dn-tavan)) }
+  30% { transform: translateX(-50%) translateY(-10px) rotate(-6deg) }
+  60% { transform: translateX(-50%) translateY(-4px) rotate(4deg) }
+  100% { bottom: min(calc(var(--dn-simdi) - 6px), var(--dn-tavan)); transform: translateX(-50%) }
+}
+.deneme-kahraman.vardi { bottom: calc(100% - 30px) }
+
+/* Zemin ve düğme */
+.deneme-zemin { display: flex; align-items: baseline; justify-content: center; gap: 5px; padding: 7px 8px 6px; border-radius: 12px;
+  background: linear-gradient(#a6c77e, #8fb468); color: #fff; box-shadow: inset 0 -3px 0 #7a9d55 }
+.deneme-sayi { font-size: 17px; font-weight: 800; letter-spacing: -.4px }
+.deneme-zemin small { font-size: 10px; font-weight: 700; opacity: .9 }
+.deneme-eylem { display: flex; flex-direction: column; align-items: stretch; gap: 6px }
+.deneme-eylem .deneme-dugme { width: 100%; justify-content: center; padding: 0 12px }
+.deneme-eylem .text-btn { font-size: 10px; align-self: center }
+
+/* ——— Sol panel: sıradaki deneme kartı ——— */
+.deneme-kart { border-left: 6px solid var(--dn-renk) }
+.deneme-kart-ust { display: flex; align-items: center; gap: 9px }
+.deneme-no { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--dn-renk);
+  color: #fff; font-size: 12px; font-weight: 800 }
+
+/* ——— Haritanın üstündeki konuşma balonu ———
+   Başlığın hemen altında, sola yaslı: üstteki kamera düğmelerinin ve
+   başlığın üstüne hiçbir ekran boyunda binmesin. */
+.deneme-balon { position: absolute; left: 32px; top: 92px; display: flex; align-items: center; gap: 9px; max-width: min(58%, 460px);
+  padding: 6px 18px 6px 6px; border-radius: 999px; background: #fffdf5ee; border: 2px solid var(--dn-renk);
+  font-size: 13px; font-weight: 700; color: #5a4a3c; pointer-events: none; z-index: 3; box-shadow: 0 6px 18px #2d3b2a1a }
+.deneme-balon-yuz { width: 38px; height: 38px; display: block; flex: none }
+.deneme-balon-yuz svg { width: 100%; height: 100% }
+.deneme-balon.yeni { animation: dn-balon 1.4s cubic-bezier(.3, 1.4, .5, 1) both }
+@keyframes dn-balon { 0% { transform: translateY(-16px) scale(.7); opacity: 0 } 45% { transform: scale(1.06); opacity: 1 } 100% { transform: none } }
+.deneme-balon { transform-origin: 20px 50% }
+
+
+/* ——— Bölüm sonu: tırmanışın fotoğrafı ——— */
+.deneme-foto { position: relative; width: min(360px, 86vw); height: 250px; margin: 0 auto 16px; border-radius: 22px; overflow: hidden;
+  background: linear-gradient(#efe6f6, #fbf6ec 70%) }
+.deneme-foto-zemin { position: absolute; left: 0; right: 0; bottom: 0; height: 18px; background: linear-gradient(#a6c77e, #86ab60) }
+.deneme-foto-hedef { position: absolute; top: 8px; left: 50%; width: 58px; height: 58px; transform: translateX(-50%); animation: dn-sallan 3s ease-in-out infinite; transform-origin: 50% 8% }
+.deneme-foto-hedef svg { width: 100%; height: 100% }
+.deneme-foto-hedef.ulasildi { filter: drop-shadow(0 0 10px #c4a3e0) }
+.deneme-foto-yigin { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column-reverse; align-items: center }
+.deneme-foto-kat { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 6px; margin-top: 2px;
+  font-size: 10px; font-weight: 750; color: #fff; animation: dn-yeni .7s cubic-bezier(.3, 1.5, .5, 1) both }
+.deneme-foto-kat span { width: 26px; height: 26px; display: block } .deneme-foto-kat svg { width: 100%; height: 100% }
+.deneme-foto-kat.kat-0 { background: #e08a4a; width: 150px }
+.deneme-foto-kat.kat-1 { background: #9fa192; width: 136px; animation-delay: .15s }
+.deneme-foto-kat.kat-2 { background: #b98649; width: 122px; animation-delay: .3s }
+.deneme-foto-kat.kat-3 { background: #9c6b3e; width: 108px; animation-delay: .45s }
+.deneme-foto-kahraman { width: 58px; height: 56px; display: block; margin-bottom: -2px; animation: dn-zipla 1.6s .6s ease-in-out infinite }
+.deneme-foto-kahraman svg { width: 100%; height: 100% }
+@keyframes dn-zipla { 0%, 60%, 100% { transform: none } 30% { transform: translateY(-10px) } }
+
+/* ——— Ekran boyları ——— */
+@media (min-width: 1700px) {
+  .harita-icerik.deneme-icerik { grid-template-columns: 370px 1fr 250px }
+  .deneme-hedef-ikon { width: 66px; height: 66px }
+  .deneme-hedef strong { font-size: 38px }
+  .deneme-kahraman { width: 72px; height: 70px; --dn-tavan: calc(100% - 64px) }
+  .deneme-kat { left: -56px; width: 52px } .deneme-direk { margin-left: 56px }
+  .deneme-kat-ikon { width: 32px; height: 32px } .deneme-kat small { font-size: 9px }
+}
+@media (max-width: 1100px) {
+  .harita-icerik.deneme-icerik { grid-template-columns: 250px 1fr 172px }
+  .deneme-kule { padding: 12px 10px 14px }
+  .deneme-hedef strong { font-size: 24px }
+  .deneme-hedef-ikon { width: 42px; height: 42px }
+  .deneme-balon { font-size: 11px }
+}
+@media (max-height: 760px) and (min-width: 761px) {
+  .deneme-kule { gap: 7px; padding-top: 10px; padding-bottom: 12px }
+  .deneme-hedef { padding: 5px 8px } .deneme-hedef-ikon { width: 40px; height: 40px }
+  .deneme-kahraman { width: 46px; height: 44px }
+}
+@media (max-width: 760px) {
+  .harita-icerik.deneme-icerik { display: flex; flex-direction: column }
+  .deneme-icerik .ada-gorunumu { order: 1 }
+  .deneme-kule { order: 2; height: 360px; flex: none; border-left: 0; border-top: 1px solid #e3dccb }
+  .deneme-direk { width: 170px; align-self: center; margin-left: 56px }
+  .deneme-icerik .deneme-paneli { order: 3 }
+  .deneme-balon { font-size: 11px; top: 70px; left: 21px; max-width: calc(100% - 42px) }
+  .deneme-foto { height: 220px }
+}
+@media (prefers-reduced-motion: reduce) {
+  .deneme-hedef-ikon, .deneme-basamak.simdi .deneme-basamak-govde, .deneme-basamak.yeni .deneme-basamak-govde,
+  .deneme-kahraman.tirmaniyor, .deneme-balon.yeni, .deneme-foto-hedef, .deneme-foto-kat, .deneme-foto-kahraman { animation: none }
+}

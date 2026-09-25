@@ -1,0 +1,157 @@
+/* yarisma kurgusu (Güneş ile Rüzgâr) — yalnız bu kurgunun ekranları.
+   Tahta: üstte gökyüzü panosu (Rüzgâr · ibre + yolcu · Güneş), altta
+   harita ve deneme kartı. Renk düzeni sıraya göre: Rüzgâr'da serin mavi,
+   Güneş'te sıcak altın. */
+
+.yarisma-sayfasi{--pano-a:#cfe2ee;--pano-b:#f1f0e6;--kart-zemin:#f1f5f4;--sira-renk:#4f7f9e;--sira-acik:#e2eef5}
+.yarisma-sayfasi.sira-gunes{--pano-a:#f3f0e2;--pano-b:#fbe0a2;--kart-zemin:#fbf5e6;--sira-renk:#c1801c;--sira-acik:#fdf0cf}
+
+/* ——— Gökyüzü panosu ——— */
+.yarisma-pano{display:grid;grid-template-columns:1fr minmax(420px,1.5fr) 1fr;align-items:center;gap:18px;padding:12px 34px;
+  background:linear-gradient(90deg,var(--pano-a),var(--pano-b));border-bottom:1px solid #dfe3d6;position:relative;z-index:3;transition:background .6s}
+.yarisma-taraf{display:flex;align-items:center;gap:13px;opacity:.5;filter:saturate(.55);transition:opacity .5s,filter .5s,transform .5s}
+.yarisma-taraf.gunes{flex-direction:row-reverse;text-align:right}
+.yarisma-taraf.aktif{opacity:1;filter:none;transform:scale(1.04)}
+.yarisma-yuz{width:78px;height:74px;flex:none;display:block}
+.yarisma-yuz svg{width:100%;height:100%}
+.yarisma-taraf.aktif .yarisma-yuz{animation:yarismaSalla 3.2s ease-in-out infinite}
+.yarisma-taraf.gunes.aktif .yarisma-yuz{animation:yarismaParla 3.6s ease-in-out infinite}
+.yarisma-taraf-yazi small{display:block;font-size:9px;letter-spacing:1.6px;font-weight:750;color:#6f7f78}
+.yarisma-taraf-yazi strong{display:block;font-size:21px;letter-spacing:-.5px;line-height:1.15}
+.yarisma-turlari{display:flex;gap:4px;margin-top:6px}
+.yarisma-taraf.gunes .yarisma-turlari{justify-content:flex-end}
+.yarisma-turlari i{width:22px;height:6px;border-radius:4px;background:#d8dccf}
+.yarisma-taraf.ruzgar .yarisma-turlari i.bitti{background:#7fa9c4}
+.yarisma-taraf.gunes .yarisma-turlari i.bitti{background:#e9b44a}
+.yarisma-turlari i.simdi{background:var(--sira-renk);animation:yarismaNabiz 1.6s ease-in-out infinite}
+.yarisma-rozet{display:inline-block;margin-top:7px;padding:3px 9px;border-radius:999px;font-size:8.5px;letter-spacing:1.3px;font-weight:800;
+  background:#ffffffb0;color:#7a857c}
+.yarisma-taraf.aktif .yarisma-rozet{background:var(--sira-renk);color:#fffaf0}
+
+.yarisma-orta{display:grid;grid-template-columns:170px 1fr;grid-template-rows:auto auto;align-items:center;column-gap:16px;
+  background:#fffdf6d9;border:1px solid #ffffff;border-radius:18px;padding:8px 16px 10px;box-shadow:0 6px 18px #3a4c3f12}
+.yarisma-pano-baslik{grid-column:1/-1;font-size:9px;letter-spacing:2.2px;font-weight:800;color:#8a917f;text-align:center;margin-bottom:2px}
+.yarisma-kadran{position:relative;width:170px;height:94px}
+.yarisma-kadran svg{position:absolute;inset:0;width:100%;height:100%}
+.yarisma-ibre{position:absolute;left:calc(50% - 2.5px);bottom:8px;width:5px;height:66px;border-radius:5px 5px 2px 2px;background:#3a4b44;
+  transform-origin:50% 100%;transform:rotate(var(--aci,0deg));transition:transform 1.6s cubic-bezier(.34,1.7,.5,1)}
+.yarisma-ibre:before{content:'';position:absolute;left:-4px;top:-5px;border:6.5px solid transparent;border-bottom:9px solid #3a4b44;border-top:0}
+.yarisma-mil{position:absolute;left:calc(50% - 8px);bottom:1px;width:16px;height:16px;border-radius:50%;background:#3a4b44;box-shadow:0 0 0 4px #fffdf6}
+.yarisma-uc{position:absolute;bottom:-3px;font-size:8.5px;font-weight:750;color:#6f7f78;white-space:nowrap}
+.yarisma-uc.sol{left:-6px}
+.yarisma-uc.sag{right:-6px}
+
+.yarisma-yolcu{display:grid;grid-template-columns:52px 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center}
+.yarisma-yolcu-yuz{grid-row:1/3;width:52px;height:52px;display:block}
+.yarisma-yolcu-yuz svg{width:100%;height:100%}
+.yarisma-yolcu-yazi strong{display:block;font-size:12.5px;line-height:1.3}
+.yarisma-yolcu-yazi small{display:block;font-size:10px;color:#8a917f;font-weight:650}
+.yarisma-giysiler{display:flex;gap:5px;margin-top:5px}
+.yarisma-giysi{width:34px;height:34px;border-radius:10px;background:#f1efe6;border:1px solid #e5e2d4;display:grid;place-items:center;
+  opacity:.3;filter:grayscale(1);transition:opacity .5s,filter .5s,transform .5s}
+.yarisma-giysi svg{width:28px;height:28px}
+.yarisma-giysi.giyili{opacity:1;filter:none;background:#fff;border-color:#e2d3b0}
+.yarisma-giysi.yeni{animation:yarismaGiydi 1.4s cubic-bezier(.3,1.6,.5,1) both;box-shadow:0 0 0 3px #7fa9c455}
+.yarisma-giysi.cikti{animation:yarismaCikti 1.6s ease-out both}
+
+/* ——— Harita ve deneme kartı ——— */
+.yarisma-icerik{flex:1;min-height:0;display:grid;grid-template-columns:1fr 330px}
+.yarisma-sayfasi .ada-gorunumu{min-height:0}
+.yarisma-kart{display:flex;flex-direction:column;padding:22px 26px 22px;background:var(--kart-zemin);border-left:1px solid #e0e4d8;overflow:auto;transition:background .6s}
+.yarisma-sira{color:var(--sira-renk)!important;font-size:9px;letter-spacing:1.6px}
+.yarisma-kart h1{font-size:27px;line-height:1.1;margin:8px 0 8px;letter-spacing:-.6px}
+.yarisma-kart .bolum-hikaye{font-size:12px}
+.yarisma-konusma{display:flex;gap:11px;align-items:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0;margin:14px 0}
+.yarisma-konusma-yuz{width:52px;height:52px;flex:none;display:block}
+.yarisma-konusma-yuz svg{width:100%;height:100%}
+.yarisma-konusma strong{font-size:12px}
+.yarisma-konusma p{font-size:10.5px;line-height:1.6;color:var(--muted);margin-top:3px;font-style:italic}
+/* Deneme kutusu kartın dibine yapışır: kısa ekranda hikâye kayar, düğme hep görünür. */
+.yarisma-deneme{margin-top:auto;padding:16px;background:#fffdf5;border:1px solid #e4e6d5;border-top:4px solid var(--sira-renk);border-radius:13px;
+  position:sticky;bottom:0;z-index:1;box-shadow:0 -10px 14px var(--kart-zemin)}
+.yarisma-deneme .eyebrow{font-size:8px;letter-spacing:1.4px}
+.yarisma-deneme h2{font-size:16px;line-height:1.45;letter-spacing:-.3px;margin:8px 0}
+.yarisma-deneme>p{font-size:10.5px;line-height:1.6;color:#87907d}
+.yarisma-eylemler{display:flex;align-items:center;gap:10px;margin-top:14px}
+.yarisma-eylemler .primary{flex:1;padding:0 16px}
+.yarisma-eylemler>.text-btn{font-size:10px}
+.yarisma-eylemler>.text-btn span{display:none}
+
+/* Deneme haberi: tahtaya dönünce bir önceki denemenin etkisi. Dünyanın
+   "Göreve gir" istemi alt ortada; haber onun üstünde durur, örtmez. */
+.yarisma-haber{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);display:flex;align-items:center;gap:11px;max-width:min(560px,86%);
+  padding:9px 20px 9px 9px;border-radius:999px;background:#fffdf6f2;border:2px solid #9cc1d8;box-shadow:0 10px 26px #2c3d3a24;
+  font-size:13px;font-weight:650;line-height:1.4;z-index:4;animation:yarismaHaber .7s cubic-bezier(.3,1.5,.5,1) both;transition:opacity .8s,transform .8s}
+.yarisma-haber.gunes{border-color:#f2c35a}
+.yarisma-haber.gitti{opacity:0;transform:translate(-50%,14px);pointer-events:none}
+.yarisma-haber-yuz{width:38px;height:38px;flex:none;display:block}
+.yarisma-haber-yuz svg{width:100%;height:100%}
+
+/* ——— Tur sonucu skorbordu ——— */
+.yarisma-skor.sira-ruzgar{background:radial-gradient(ellipse at 50% 30%,#d9e9f2 0,transparent 60%),var(--paper)}
+.yarisma-skor.sira-gunes{background:radial-gradient(ellipse at 50% 30%,#fbe7b8 0,transparent 60%),var(--paper)}
+.yarisma-skor .hikaye-karti{max-width:760px;padding-bottom:40px}
+.yarisma-skorbord{width:min(660px,100%);display:flex;flex-direction:column;gap:7px;margin-top:20px;text-align:left}
+.yarisma-skor-satir{display:grid;grid-template-columns:44px 170px 1fr auto;align-items:center;gap:12px;padding:8px 14px 8px 8px;border-radius:13px;
+  background:#fffdf6;border:1px solid #e5e5d6}
+.yarisma-skor-satir.ruzgar{border-left:5px solid #9cc1d8}
+.yarisma-skor-satir.gunes{border-left:5px solid #f2c35a}
+.yarisma-skor-satir.sirada{opacity:.48}
+.yarisma-skor-satir.simdi{box-shadow:0 6px 18px #3a4c3f1c;border-color:var(--accent)}
+.yarisma-skor-yuz{width:44px;height:44px;display:block}
+.yarisma-skor-yuz svg{width:100%;height:100%}
+.yarisma-skor-ad small{display:block;font-size:8.5px;letter-spacing:1.4px;font-weight:750;color:#8a917f}
+.yarisma-skor-ad strong{display:block;font-size:13px}
+.yarisma-skor-sonuc{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12px;color:#5f6b61;font-weight:600}
+.yarisma-skor-giysiler{display:flex;gap:4px}
+.yarisma-skor-giysiler i{width:26px;height:26px;display:block;border-radius:8px;background:#fff;border:1px solid #e2e0d2;position:relative}
+.yarisma-skor-giysiler i svg{width:100%;height:100%}
+.yarisma-skor-giysiler i.eklendi:after,.yarisma-skor-giysiler i.cikti:after{position:absolute;right:-5px;top:-6px;width:13px;height:13px;border-radius:50%;
+  font:800 10px/13px var(--font);text-align:center;color:#fff}
+.yarisma-skor-giysiler i.eklendi:after{content:'+';background:#6f9dbb}
+.yarisma-skor-giysiler i.cikti{opacity:.55}
+.yarisma-skor-giysiler i.cikti:after{content:'−';background:#d99a2b}
+.yarisma-skor-bekliyor{font-style:italic;color:#9aa192}
+.yarisma-skor-palto{font-size:10.5px;font-weight:800;padding:5px 10px;border-radius:999px;background:#eef0e8;color:#6f7a6c;white-space:nowrap}
+.yarisma-skor-palto.cikti{background:#e4f2d5;color:#4c8050}
+
+@keyframes yarismaSalla{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(-5px) rotate(-3deg)}}
+@keyframes yarismaParla{0%,100%{transform:scale(1);filter:drop-shadow(0 0 0 #f7c65200)}50%{transform:scale(1.05);filter:drop-shadow(0 0 10px #f7c652aa)}}
+@keyframes yarismaNabiz{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes yarismaGiydi{0%{transform:scale(.3) translateY(-14px);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes yarismaCikti{0%{transform:none;opacity:1;filter:none}40%{transform:translateY(-10px) rotate(-12deg);opacity:1;filter:none}100%{transform:none;opacity:.3;filter:grayscale(1)}}
+@keyframes yarismaHaber{0%{opacity:0;transform:translate(-50%,24px)}100%{opacity:1;transform:translate(-50%,0)}}
+
+@media(max-width:1100px){
+  .yarisma-pano{grid-template-columns:auto 1fr auto;padding:10px 20px;gap:12px}
+  .yarisma-taraf-yazi small,.yarisma-rozet{display:none}
+  .yarisma-yuz{width:56px;height:54px}
+  .yarisma-icerik{grid-template-columns:1fr 280px}
+  .yarisma-kart{padding:18px 18px}
+}
+@media(max-height:820px) and (min-width:761px){
+  .yarisma-pano{padding-top:6px;padding-bottom:6px}
+  .yarisma-yuz{width:58px;height:56px}
+  .yarisma-kart{padding:16px 20px}
+  .yarisma-kart h1{font-size:23px}
+  .yarisma-konusma{margin:10px 0;padding:9px 0}
+  .yarisma-deneme{padding:12px 14px}
+  .yarisma-deneme h2{font-size:15px;margin:6px 0}
+  .yarisma-eylemler{margin-top:10px}
+}
+@media(max-width:760px){
+  .yarisma-pano{grid-template-columns:1fr 1fr;padding:12px 16px}
+  .yarisma-orta{grid-column:1/-1;order:3;grid-template-columns:150px 1fr}
+  .yarisma-kadran{width:150px;height:83px}
+  .yarisma-ibre{height:56px}
+  .yarisma-icerik{display:flex;flex-direction:column-reverse}
+  .yarisma-sayfasi .ada-gorunumu{height:430px;flex:none}
+  .yarisma-haber{bottom:84px;font-size:12px}
+  .yarisma-kart{border-left:0}
+  .yarisma-skor-satir{grid-template-columns:36px 1fr;row-gap:4px}
+  .yarisma-skor-sonuc,.yarisma-skor-palto{grid-column:2}
+}
+@media(prefers-reduced-motion:reduce){
+  .yarisma-ibre{transition:none}
+  .yarisma-taraf.aktif .yarisma-yuz,.yarisma-giysi.yeni,.yarisma-giysi.cikti,.yarisma-turlari i.simdi,.yarisma-haber{animation:none}
+}

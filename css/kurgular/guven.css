@@ -1,0 +1,115 @@
+/* guven kurgusu (Yalancı Çoban) — yalnız bu kurgunun ekranları.
+   Tahta: solda yayla (açık dünya), sağda köyün gece görünüşü; altta
+   inip çıkan "köyün güveni" ölçeri. */
+
+.guven-sayfasi{--gece:#1f2a44;--fener:#f2c14e}
+.guven-icerik{display:grid;grid-template-columns:1fr 340px;flex:1;min-height:0}
+.guven-dunya{min-height:0}
+.guven-dunya .harita-baslik h2,.guven-dunya .harita-baslik .eyebrow{text-shadow:0 0 6px #fbf8ec,0 0 14px #fbf8ec,0 1px 2px #fbf8ec}
+
+/* ——— Sağ panel ——— */
+.guven-paneli{display:flex;flex-direction:column;gap:14px;padding:18px 22px 20px;background:linear-gradient(180deg,#eef0ea 0,#f6f4ea 38%);overflow:auto;z-index:2;border-left:1px solid var(--line)}
+.guven-gece-kabi{position:relative;border-radius:14px;overflow:hidden;box-shadow:0 10px 24px #1f2a4430;background:var(--gece);flex:none}
+.guven-gece{display:block;width:100%;height:auto}
+.guven-gece-notu{position:absolute;left:10px;bottom:8px;margin:0;font-size:10px;color:#e7e9f2;letter-spacing:.2px;text-shadow:0 1px 2px #0008}
+.guven-bolum .eyebrow{color:var(--accent)}
+.guven-bolum h1{font-size:28px;line-height:1.08;margin:7px 0 6px;letter-spacing:-.6px}
+.guven-bolum .bolum-hikaye{margin:0}
+.guven-dost{display:flex;gap:11px;align-items:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:11px 0}
+.guven-dost-yuz{width:52px;height:52px;flex:none}
+.guven-dost-yuz svg{width:100%;height:100%}
+.guven-dost strong{font-size:12px}
+.guven-dost p{font-size:11px;line-height:1.6;color:var(--muted);margin:3px 0 0;font-style:italic}
+.guven-siradaki{margin-top:auto;padding:14px 15px;background:#fffcf1;border:1px solid #e4e6d5;border-radius:13px}
+.guven-siradaki .eyebrow{font-size:8px;letter-spacing:1.4px}
+.guven-siradaki h2{font-size:15px;line-height:1.45;margin:7px 0}
+.guven-siradaki>p{font-size:11px;line-height:1.6;color:#87907d;margin:0}
+
+/* ——— Pencereler: yanma ve sönme ——— */
+.guven-pencere rect{transition:fill .6s}
+.guven-pencere.yeni-yandi{animation:guven-yan 1.6s ease-out both}
+.guven-pencere.yeni-sondu rect{animation:guven-son 1.8s ease-in both}
+@keyframes guven-yan{0%{opacity:.15}35%{opacity:1}55%{opacity:.55}100%{opacity:1}}
+@keyframes guven-son{0%{fill:#ffd36b}30%{fill:#ffe79c}60%{fill:#8a7a52}100%{fill:#1d263b}}
+.guven-gece.evre-parlar .guven-pencere.yanik rect{filter:drop-shadow(0 0 3px #ffe9a0)}
+.guven-kuzu.icerde{animation:guven-kuzu .5s ease-out both}
+@keyframes guven-kuzu{from{transform:translateY(-4px);opacity:0}to{transform:none;opacity:1}}
+
+/* ——— Alt bar: köyün güveni ——— */
+.guven-alt{display:flex;align-items:center;gap:26px;background:var(--paper);padding:16px 30px;border-top:1px solid #dfe5d6;z-index:3;min-height:104px;flex-wrap:wrap}
+.guven-olcer{min-width:300px}
+.guven-olcer-ust{display:flex;align-items:baseline;gap:12px}
+.guven-olcer .eyebrow,.guven-suru .eyebrow{font-size:8px;letter-spacing:1.5px}
+.guven-sayi{display:inline-flex;align-items:baseline;gap:3px;letter-spacing:-.6px}
+.guven-sayi b{font-size:26px;font-weight:700;color:#8a6424}
+.guven-sayi small{font-size:12px;color:#8a9385;font-weight:600}
+.guven-ok{font-size:12px;margin-left:6px;font-weight:700}
+.guven-ok.yukari{color:#5b9a4f}
+.guven-ok.asagi{color:#b5584a}
+.guven-fenerler{display:flex;gap:2px;margin-top:6px}
+.guven-fener{width:26px;height:30px;display:block;transition:transform .3s,filter .3s}
+.guven-fener svg{width:100%;height:100%}
+.guven-fener:not(.yanik){opacity:.75}
+.guven-fener.parlak{filter:drop-shadow(0 0 5px #ffd76e)}
+.guven-fener.yeni-yandi{animation:guven-fener-yan 1.4s ease-out both}
+.guven-fener.yeni-sondu{animation:guven-fener-son 1.4s ease-in both}
+@keyframes guven-fener-yan{0%{transform:scale(.6);filter:brightness(.4)}50%{transform:scale(1.3);filter:drop-shadow(0 0 9px #ffd76e)}100%{transform:none}}
+@keyframes guven-fener-son{0%{transform:scale(1.2);filter:drop-shadow(0 0 8px #ffd76e)}60%{transform:translateY(3px)}100%{transform:none}}
+.guven-suru{min-width:150px}
+.guven-kuzular{display:flex;gap:3px;margin-top:7px;flex-wrap:wrap;max-width:160px}
+.guven-kuzular i{width:10px;height:8px;border-radius:5px;background:#dfe2d6;border:1px solid #c9cdbf}
+.guven-kuzular i.icerde{background:var(--accent);border-color:var(--accent)}
+.guven-durum{flex:1;min-width:200px;font-size:12px;line-height:1.55;color:#5d6a5f;padding:9px 14px;border-radius:12px;background:#f1efe3}
+.guven-durum.sondu{background:#f6e6e0;color:#8d4d42}
+.guven-durum.yandi{background:#f7eed2;color:#7a5a1d}
+.guven-alt .harita-eylemler{margin-left:auto}
+
+/* ——— Bölüm sonu: köyün güven durumu ——— */
+.guven-odul .hikaye-karti{padding-top:22px}
+.guven-odul-koy{width:min(440px,86vw);margin-bottom:20px;border-radius:16px;overflow:hidden;box-shadow:0 14px 30px #1f2a4440}
+.guven-odul-koy svg{display:block;width:100%;height:auto}
+
+@media(min-width:1700px){
+  .guven-icerik{grid-template-columns:1fr 420px}
+  .guven-bolum h1{font-size:36px}
+  .guven-siradaki h2{font-size:19px}
+  .guven-siradaki>p,.guven-dost p{font-size:13px}
+  .guven-fener{width:34px;height:40px}
+  .guven-durum{font-size:15px}
+}
+@media(max-width:1100px){
+  .guven-icerik{grid-template-columns:1fr 280px}
+  .guven-paneli{padding:14px 16px}
+  .guven-bolum h1{font-size:23px}
+  .guven-olcer{min-width:0}
+  .guven-fener{width:20px;height:24px}
+  .guven-alt{padding:14px 20px;gap:16px}
+}
+/* Alçak ekranlar (1366×768, 1280×800 akıllı tahta ve dizüstü): sıradaki iş
+   kaydırmadan görünsün. Köy resmi aşağıdan kırpılır (gökyüzü kısalır,
+   evler ve kuzular kalır), yazılar sıkışır. */
+@media(max-height:860px) and (min-width:761px){
+  .guven-paneli{gap:9px;padding-top:12px;padding-bottom:12px}
+  .guven-gece-kabi svg{height:124px}
+  .guven-bolum h1{font-size:23px;margin:4px 0}
+  .guven-bolum .bolum-hikaye{font-size:12px;line-height:1.5}
+  .guven-dost{padding:6px 0}
+  .guven-dost-yuz{width:40px;height:40px}
+  .guven-siradaki{padding:10px 13px}
+  .guven-siradaki h2{margin:4px 0}
+}
+@media(max-height:790px) and (min-width:761px){
+  .guven-bolum .bolum-hikaye{display:none}
+  .guven-paneli{gap:10px}
+  .guven-alt{min-height:88px;padding-top:12px;padding-bottom:12px}
+}
+@media(max-width:760px){
+  .guven-icerik{display:flex;flex-direction:column;flex:none}
+  .guven-paneli{border-left:0;padding:16px 18px}
+  .guven-alt{padding:14px 18px 22px;gap:14px}
+  .guven-olcer{width:100%}
+  .guven-fenerler{gap:1px}
+  .guven-fener{width:calc((100% - 11px) / 12);height:28px}
+  .guven-alt .harita-eylemler{width:100%;margin-left:0}
+  .guven-alt .harita-eylemler>.primary{flex:1}
+}

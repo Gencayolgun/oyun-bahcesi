@@ -1,0 +1,125 @@
+/* konukluk kurgusu (Tilki ile Leylek) — yalnız bu kurgunun ekranları.
+   Tahtanın altında yukarıdan görülen bir sofra; konan her şey kime uygun
+   olduğuna göre renkli bir halkayla işaretlenir. */
+
+.konukluk-sayfasi,.konukluk-karne{--kime-tilki:#e07a36;--kime-leylek:#cf4535;--kime-ikisi:#5f9a55}
+.kime-tilki{--kime:var(--kime-tilki)}
+.kime-leylek{--kime:var(--kime-leylek)}
+.kime-ikisi{--kime:var(--kime-ikisi)}
+
+/* ——— Yan panel: sıradaki çocuğun sofraya getireceği ——— */
+.ks-getir{display:flex;align-items:center;gap:11px;margin-top:12px;padding:8px 12px 8px 8px;border-radius:12px;
+ background:#fff;border:1px solid #ece5d4}
+.ks-getir-ikon{width:42px;height:42px;flex:none;border-radius:50%;background:#fbf7ee;box-shadow:0 0 0 3px var(--kime);padding:5px}
+.ks-getir strong{display:block;font-size:12px}
+.ks-getir small{display:block;font-size:10px;font-weight:700;color:var(--kime);margin-top:2px}
+
+/* ——— Dünyanın üstünde: az önce sofraya konan ——— */
+.konukluk-haber{position:absolute;left:50%;top:22px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:12px;
+ padding:8px 20px 8px 8px;border-radius:999px;background:#fffdf6f2;border:2px solid var(--kime);box-shadow:0 10px 26px #3a4a3020;
+ pointer-events:none;animation:ksHaber 4.6s ease both}
+.ks-haber-ikon{width:44px;height:44px;flex:none}
+.konukluk-haber strong{display:block;font-size:14px;white-space:nowrap}
+.konukluk-haber small{display:block;font-size:11px;font-weight:700;color:var(--kime);margin-top:2px}
+/* Dar dünyada kamera düğmeleriyle aynı satıra sığmaz: onların altına iner. */
+@media(max-width:1320px){.konukluk-haber{top:80px}}
+@keyframes ksHaber{0%{opacity:0;transform:translate(-50%,-14px)}10%,78%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-8px)}}
+
+/* ——— Alt bar ——— */
+.konukluk-alt{gap:18px 26px;padding:14px 28px;flex-wrap:wrap}
+.konukluk-sayac{min-width:170px}
+.konukluk-sayac .eyebrow{font-size:8px;letter-spacing:1.5px}
+.konukluk-sayac strong{display:block;margin-top:2px;letter-spacing:-.6px}
+.ks-hazir{font-size:30px;font-weight:700;color:var(--accent)}
+.konukluk-sayac strong small{font-size:12px;color:#8a9385;font-weight:600;margin-left:4px}
+.ks-sayim{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;max-width:240px}
+.ks-cip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:#5d6a5a;padding:2px 8px 2px 3px;border-radius:999px;
+ background:#fff;border:1.5px solid var(--kime)}
+.ks-cip-yuz{width:20px;height:20px;display:block}
+.ks-cip-nokta{width:12px;height:12px;border-radius:50%;background:var(--kime);margin:4px 2px 4px 4px}
+
+/* Sofra: iki uçta Alev ile Lale, ortada masa örtüsü.
+   Yerlerin boyu (--yer) sofranın kendi genişliğinden hesaplanır: 1280
+   piksellik bir tahtada da dört bölümün hepsi kaydırmadan görünür.
+   --sutun (toplam sütun) ve --parca (bölüm sayısı) JS'ten gelir.
+   Hesaptaki sabitler: iki uç (--kenar), masanın çerçevesi (26px),
+   bölüm başına iç boşluk ve ayraç (20px); sütun başına 1.16 = yer + ara. */
+.konukluk-sofra{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;max-width:100%;--uc:62px;--kenar:calc(var(--uc) * 2 + 20px)}
+.konukluk-alt .konukluk-sofra{container-type:inline-size}
+.ks-masa{--yer:32px;--ara:5px}
+@container (min-width:1px){
+ .ks-masa{--yer:clamp(22px, calc((100cqi - var(--kenar) - 26px - var(--parca) * 20px) / (var(--sutun) * 1.16)), 38px);--ara:calc(var(--yer) * .16)}
+}
+.ks-uc{display:flex;flex-direction:column;align-items:center;gap:1px;flex:none;width:var(--uc)}
+.ks-uc small{font-size:7px;letter-spacing:1.2px;font-weight:800;color:#9aa38f;white-space:nowrap}
+.ks-uc-yuz{width:48px;height:48px;display:block}
+.ks-uc b{font-size:11px}
+.ks-masa{display:flex;align-items:stretch;min-width:0;overflow-x:auto;border-radius:18px;padding:7px 8px;
+ background:repeating-conic-gradient(#f5dfc2 0 25%,#fffaf0 0 50%) 0 0/16px 16px;
+ border:5px solid #c9a26f;box-shadow:0 6px 0 #a98158,0 12px 22px #5a432a22}
+.ks-bolum{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,var(--yer));grid-auto-columns:var(--yer);gap:var(--ara);padding:2px 9px;
+ border-left:2px dashed #d9bd8f;position:relative}
+.ks-bolum:first-child{border-left:0}
+.ks-bolum:after{content:'';position:absolute;left:9px;right:9px;bottom:-5px;height:3px;border-radius:3px;background:var(--bolum);opacity:.55}
+.ks-yer{width:var(--yer);height:var(--yer);border-radius:50%;display:block;padding:calc(var(--yer) * .1);background:#fffdf7;border:1.5px dashed #d8c8a8;transition:transform .3s}
+.ks-yer svg{width:100%;height:100%}
+.ks-yer.final{border-radius:9px}
+.ks-yer.dolu{border:0;background:#fff;box-shadow:0 0 0 3px var(--kime),0 3px 5px #5a432a26}
+.ks-yer.simdi{border:2px dashed var(--accent);background:#fff6d6;animation:ksSimdi 1.4s ease-in-out infinite}
+.ks-yer.simdi svg{opacity:.38;filter:grayscale(.4)}
+.ks-yer.yeni{animation:ksKondu .8s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes ksSimdi{50%{transform:scale(1.12)}}
+@keyframes ksKondu{0%{transform:translateY(-38px) scale(.3);opacity:0}70%{opacity:1}100%{transform:none}}
+
+/* ——— Bölüm sonu: "Misafir doydu mu?" karnesi ——— */
+.konukluk-karne .hikaye-karti{max-width:820px;padding-top:28px}
+.konukluk-karne .hikaye-karti h1{font-size:44px;margin:12px 0 18px}
+.konukluk-karne .eyebrow{color:var(--accent)}
+.karne-satirlari{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;width:100%;margin-bottom:18px}
+.karne-kisi{display:flex;align-items:center;gap:12px;text-align:left;padding:10px 14px 10px 8px;border-radius:16px;background:#fffdf6;
+ border:1px solid #e6e2d2;box-shadow:0 5px 14px #38482908}
+.karne-yuz{width:70px;height:70px;flex:none}
+.karne-yazi strong{display:block;font-size:15px}
+.karne-damga{display:inline-block;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.6px;padding:2px 10px;border-radius:999px;
+ margin:4px 0 5px;color:#fff;background:#8f9a86;transform:rotate(-3deg)}
+.karne-yazi small{display:block;font-size:12px;line-height:1.5;color:#7b8574}
+.durum-doydu .karne-damga{background:#5f9a55}
+.durum-ac .karne-damga{background:#d68a5c}
+.durum-hazir .karne-damga{background:#e0a23a}
+.durum-bekliyor .karne-damga{background:#6f96b0}
+.durum-ac .karne-yuz{filter:saturate(.8)}
+.karne-sofrasi{flex:none;margin:0 0 16px}
+.karne-sofrasi .ks-masa{padding:9px 10px}
+.konukluk-karne .hikaye-karti>p{font-size:17px}
+
+/* Dar tahtada (1024) sayaç ile düğmenin arasına dört bölüm sığmaz:
+   sofra kendi satırına iner, iki uçtaki ev sahibi ve misafir kalır. */
+@media(max-width:1100px){
+ .konukluk-alt{row-gap:8px;padding-top:10px;padding-bottom:10px}
+ .konukluk-sayac{flex:1}
+ .konukluk-sayac strong{display:inline-block;margin-right:12px}
+ .ks-sayim{display:inline-flex;max-width:none;margin-top:0;vertical-align:4px}
+ .konukluk-alt .konukluk-sofra{order:3;flex-basis:100%;--uc:52px}.ks-uc-yuz{width:36px;height:36px}
+ @container (min-width:1px){
+  .ks-masa{--yer:clamp(20px, calc((100cqi - var(--kenar) - 26px - var(--parca) * 20px) / (var(--sutun) * 1.16)), 30px)}
+ }
+}
+@media(max-width:760px){
+ .konukluk-alt{padding:12px 16px}
+ .konukluk-sayac{min-width:0;flex:1}
+ .ks-hazir{font-size:22px}
+ .konukluk-alt .konukluk-sofra{order:3;flex-basis:100%;justify-content:center;--kenar:0px}
+ .ks-uc{display:none}
+ /* Telefonda sofra iki sıra olur: her sırada iki bölüm. */
+ .konukluk-alt .ks-masa{flex-wrap:wrap;justify-content:center;row-gap:10px;overflow:visible}
+ .konukluk-alt .ks-bolum:nth-child(odd){border-left:0}
+ @container (min-width:1px){
+  .konukluk-alt .ks-masa{--yer:clamp(20px, calc((100cqi - 26px - 40px) / (var(--sutun) * .58)), 34px)}
+ }
+ .konukluk-haber{top:auto;bottom:86px;max-width:calc(100% - 32px)}
+ .konukluk-haber strong{white-space:normal}
+ .konukluk-karne .hikaye-karti{padding:24px 16px 40px}
+ .konukluk-karne .hikaye-karti h1{font-size:32px}
+ .karne-yuz{width:54px;height:54px}
+}
+@media(prefers-reduced-motion:reduce){.ks-yer.simdi,.ks-yer.yeni,.konukluk-haber{animation:none}}

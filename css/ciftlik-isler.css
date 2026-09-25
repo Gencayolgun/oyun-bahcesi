@@ -1,0 +1,213 @@
+/* Çiftçi Fare — iş katmanı ve mikro-oyunlar (js/ciftlik/isler.js).
+   isler.js bu dosyayı kendisi yükler (sayfada yoksa <link> ekler).
+   Çocuk ekranı: YAZI YOK, RAKAM YOK. Mekaniklerin yazıları (sayaç,
+   "ARANAN", kart adları, ipuçları) burada gizlenir; ipucu ekran okuyucu
+   için aria-live'da kalır. Büyük hedefler: iş ikonu ≥88 px, basılı
+   tutma / bırak düğmeleri ≥120 px. */
+
+.ciftlik-is{position:fixed;inset:0;z-index:60;display:grid;place-items:center;
+ padding:max(12px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+ background:#23321f80;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+ --oyun-gok:#fff0c9;--oyun-zemin:#dce9b8;--oyun-kart:#fff9e9;--oyun-canli:#e29a4e;--oyun-ikinci:#86ad68;
+ animation:isGir .26s ease-out}
+.ciftlik-is[hidden]{display:none}
+@keyframes isGir{from{opacity:0}to{opacity:1}}
+.ciftlik-is-kart{position:relative;width:min(1000px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;
+ display:flex;flex-direction:column;gap:12px;padding:14px 22px 22px;border-radius:34px;border:4px solid #fff;
+ background:linear-gradient(180deg,var(--oyun-gok) 0,#fbf6e6 52%,var(--oyun-zemin) 150%);
+ box-shadow:0 26px 64px #16211455;animation:isKart .3s cubic-bezier(.3,1.3,.5,1)}
+@keyframes isKart{from{transform:translateY(24px) scale(.96)}to{transform:none}}
+.ciftlik-is-ust{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px}
+.ciftlik-is-ikon{display:block;width:96px;height:96px;padding:6px;border-radius:28px;background:#fffdf4;border:3px solid #fff;box-shadow:0 6px 0 #dccfab}
+.ciftlik-is-ikon svg{width:100%;height:100%;display:block}
+.ciftlik-is-pipler{display:flex;justify-content:center;flex-wrap:wrap;gap:12px}
+.ciftlik-is-pipler i{display:block;width:30px;height:30px;border-radius:50%;background:#efe6cb;border:3px solid #fff;box-shadow:inset 0 3px 0 #d9cfae;
+ transition:transform .25s cubic-bezier(.3,1.6,.5,1),background .25s}
+.ciftlik-is-pipler i.dolu{background:var(--oyun-ikinci);box-shadow:0 3px 0 #5d8747;transform:scale(1.18)}
+.ciftlik-is-kapat{width:72px;height:72px;padding:0;border-radius:50%;border:3px solid #fff;background:#fffdf4;color:#6b5a48;display:grid;place-items:center;
+ box-shadow:0 5px 0 #dccfab;cursor:pointer;transition:transform .12s}
+.ciftlik-is-kapat svg{width:32px;height:32px}
+.ciftlik-is-kapat:active{transform:scale(.92)}
+.ciftlik-is-kapat:focus-visible,.ciftlik-is button:focus-visible{outline:4px solid #d5a94d;outline-offset:3px}
+.ciftlik-is:focus{outline:none}
+.ciftlik-is-govde{position:relative;min-height:0}
+.ciftlik-is-govde .oyun{max-width:none;min-height:0}
+.ciftlik-is-govde .oyun-alani{gap:14px}
+
+/* Yazı ve rakam yok: mekaniklerin metinleri gizlenir. */
+.ciftlik-is .oyun-ilerleme,.ciftlik-is .oyun-durumu,.ciftlik-is .nesne-adi,.ciftlik-is .hedef-adi,.ciftlik-is .hedef-alt,
+.ciftlik-is .refleks-aranan small,.ciftlik-is .refleks-aranan strong,.ciftlik-is .gizli-rozet small,.ciftlik-is .zaman-bolge-ad{display:none}
+.ciftlik-is .oyun-mesaj{position:absolute;width:1px;height:1px;margin:0;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Refleks: aranan büyük ikonla gösterilir. */
+.ciftlik-is .refleks-aranan{padding:8px;border-radius:30px;border:4px solid #fff;background:#fffbe8;box-shadow:0 6px 0 #e4d7ae}
+.ciftlik-is .refleks-aranan>span{width:96px;height:96px}
+.ciftlik-is .refleks-sahne{max-width:560px}
+/* Zaman: "Şimdi bırak" düğmesi yazısız, büyük ok. */
+.ciftlik-is .zaman-dugme{min-width:0;width:132px;height:132px;padding:22px;border-radius:50%;border:6px solid #fff;display:grid;place-items:center;
+ background:var(--oyun-canli);box-shadow:0 9px 0 #b0702f,0 14px 26px #5a3a1a30;transition:transform .08s}
+.ciftlik-is .zaman-dugme:active{transform:translateY(6px);box-shadow:0 3px 0 #b0702f}
+.ciftlik-is .zaman-dugme svg{width:100%;height:100%}
+.ciftlik-is .zaman-tasiyici{width:clamp(72px,8vw,104px)}
+.ciftlik-is .zaman-dusen{width:52px;height:52px}
+.ciftlik-is .zaman-bolgesi svg{width:64px;height:64px}
+/* Gizli: rozetler yalnız ikon. */
+.ciftlik-is .gizli-rozet{padding:6px}
+.ciftlik-is .gizli-rozet>span{width:44px;height:44px}
+/* Besle: büyük yem kartları ve tavuk. */
+.ciftlik-is .bakim-araclari{gap:22px}
+.ciftlik-is .bakim-araclari .nesne-karti{width:136px;min-height:136px;flex-direction:column;justify-content:center;padding:10px;border:3px solid #fff;border-radius:26px;background:#fff9e9;box-shadow:0 7px 0 #d7cda9}
+.ciftlik-is .bakim-araclari .nesne-resmi{width:100px;height:100px}
+.ciftlik-is .bakim-araclari .nesne-karti.secili{box-shadow:0 0 0 6px #86ad6866,0 7px 0 #d7cda9;transform:translateY(-4px)}
+.ciftlik-is .bakim-hayvani .hedef-resmi{width:230px;height:230px}
+
+/* ——— DOLDUR ——— */
+.doldur-sahne{position:relative;display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:16px;width:100%;max-width:840px;margin:0 auto;
+ height:clamp(300px,54vh,470px);padding:16px 22px 24px;border-radius:30px;border:3px solid #fff;overflow:hidden;
+ background:radial-gradient(ellipse at 50% 108%,#cfe0a8 0 38%,transparent 39%),linear-gradient(180deg,#e2f2f4 0,#f5f9ec 64%,#dce9b8 100%);
+ box-shadow:0 8px 20px #4a604312;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:pointer}
+.doldur-hedef{justify-self:center;width:min(100%,190px);aspect-ratio:1;pointer-events:none}
+.doldur-hedef svg{width:100%;height:100%}
+.doldur-hedef.icti{animation:doldurIcti .75s cubic-bezier(.3,1.5,.5,1)}
+@keyframes doldurIcti{0%,100%{transform:scale(1)}40%{transform:scale(1.14) translateY(-6px)}}
+.doldur-kapkutu{display:flex;flex-direction:column;align-items:center;height:100%;min-height:0;pointer-events:none}
+.doldur-musluk{flex:none;width:100px;height:100px;margin-bottom:-22px;position:relative;left:-14px;z-index:1}
+.doldur-musluk svg{width:100%;height:100%}
+.doldur-akis{flex:1;display:block;width:14px;min-height:24px;position:relative;left:4px;border-radius:0 0 8px 8px;margin-bottom:-6px;
+ background:linear-gradient(180deg,#a8dce3,#5fb4c2);transform:scaleY(0);transform-origin:top;transition:transform .12s}
+.doldur-sahne.akiyor .doldur-akis{transform:scaleY(1)}
+.doldur-kap{position:relative;flex:none;height:min(66%,290px);min-height:130px;width:min(100%,200px)}
+.doldur-govde{position:absolute;inset:0;overflow:hidden;border:5px solid #fff;border-radius:16px 16px 34px 34px;background:#ffffffa6;
+ box-shadow:inset 0 0 0 3px #b8d3d8,0 8px 0 #c3d6bf}
+.doldur-su{position:absolute;left:0;right:0;bottom:0;height:0;display:block;background:linear-gradient(180deg,#8fd3dc,#4fa7b7)}
+.doldur-su:before{content:'';position:absolute;left:0;right:0;top:0;height:6px;background:#c8eef2;opacity:.9}
+.doldur-su.iniyor{transition:height .45s ease-in}
+.doldur-bant{position:absolute;left:0;right:0;display:block;background:#f4c5424d;border-top:4px dashed #dc9f22;border-bottom:4px dashed #dc9f22;
+ transition:background .15s,box-shadow .15s}
+.doldur-bant.icinde{background:#f4c54266;border-top-style:solid;border-bottom-style:solid;box-shadow:0 0 26px #f4c542}
+.doldur-sacilan{position:absolute;left:-22%;right:-22%;top:-8%;height:46%;display:block;opacity:0;pointer-events:none;
+ background:radial-gradient(circle at 8% 22%,#5fb4c2 0 8px,transparent 9px),radial-gradient(circle at 92% 30%,#5fb4c2 0 9px,transparent 10px),
+  radial-gradient(circle at 16% 70%,#5fb4c2 0 7px,transparent 8px),radial-gradient(circle at 86% 78%,#5fb4c2 0 7px,transparent 8px),
+  radial-gradient(circle at 26% 44%,#8fd3dc 0 6px,transparent 7px),radial-gradient(circle at 76% 52%,#8fd3dc 0 6px,transparent 7px)}
+.doldur-sahne.tasti .doldur-sacilan{animation:doldurSac .7s ease-in}
+.doldur-sahne.fazla .doldur-sacilan{animation:doldurSac .45s ease-in}
+.doldur-sahne.tasti .doldur-kap{animation:doldurSars .5s ease-in-out}
+@keyframes doldurSac{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(90%)}}
+@keyframes doldurSars{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}60%{transform:rotate(3deg)}}
+.doldur-sahne.dogru .doldur-govde{box-shadow:inset 0 0 0 3px #b8d3d8,0 0 0 9px #86ad6870,0 8px 0 #c3d6bf}
+.doldur-tasma{display:none}
+/* Sulama kabı: sap ve emzik. Suluk: çan biçimi ve tabla. */
+.doldur-sahne[data-kap="kova"] .doldur-kap:before{content:'';position:absolute;left:20%;right:20%;top:-30px;height:44px;border:7px solid #4a8499;border-bottom:0;border-radius:44px 44px 0 0}
+.doldur-sahne[data-kap="kova"] .doldur-kap:after{content:'';position:absolute;right:-50px;top:40%;width:64px;height:15px;background:#5f9fb5;border-radius:8px;transform:rotate(-40deg);transform-origin:0 50%}
+.doldur-sahne[data-kap="kova"] .doldur-govde{border-color:#eaf6f8;box-shadow:inset 0 0 0 4px #5f9fb5,0 8px 0 #c3d6bf}
+.doldur-sahne[data-kap="suluk"] .doldur-govde{border-radius:50% 50% 14px 14px/26% 26% 14px 14px}
+.doldur-sahne[data-kap="suluk"] .doldur-kap:after{content:'';position:absolute;left:-18%;right:-18%;bottom:-18px;height:28px;background:#e0a13c;border:3px solid #fff;border-top:0;border-radius:0 0 24px 24px}
+.doldur-dugme{justify-self:center;width:140px;height:140px;padding:22px;border-radius:50%;border:6px solid #fff;display:grid;place-items:center;
+ background:#5ea8b2;box-shadow:0 10px 0 #3e7c86,0 16px 28px #2b4a4f33;cursor:pointer;touch-action:none;transition:transform .08s,box-shadow .08s}
+.doldur-dugme svg{width:100%;height:100%;pointer-events:none}
+.doldur-dugme.basili{transform:translateY(7px);box-shadow:0 3px 0 #3e7c86,0 6px 12px #2b4a4f33}
+
+/* ——— SİLKELE ——— */
+.silkele-sahne{position:relative;width:100%;max-width:780px;height:clamp(300px,54vh,470px);margin:0 auto;border-radius:30px;border:3px solid #fff;overflow:hidden;
+ background:radial-gradient(ellipse at 50% 110%,#c7db9c 0 36%,transparent 37%),linear-gradient(180deg,#e3f0f5,#f4f8e7 66%,#d4e4ae);box-shadow:0 8px 20px #4a604312}
+.silkele-agac{position:absolute;left:50%;bottom:2%;width:min(62%,410px);aspect-ratio:1;padding:0;border:0;background:none;cursor:pointer;
+ transform:translateX(-50%);transform-origin:50% 100%}
+.silkele-agac svg{width:100%;height:100%;pointer-events:none}
+.silkele-agac.sallan{animation:agacSallan .55s ease-in-out}
+@keyframes agacSallan{0%,100%{transform:translateX(-50%) rotate(0)}25%{transform:translateX(-50%) rotate(-3.5deg)}60%{transform:translateX(-50%) rotate(3deg)}}
+.silkele-yer{position:absolute;inset:0;pointer-events:none}
+.silkele-ceviz{position:absolute;top:24%;width:9%;aspect-ratio:1;display:block;transform:translateX(-50%);animation:cevizDus .75s ease-in forwards}
+.silkele-ceviz svg{width:100%;height:100%}
+@keyframes cevizDus{from{top:24%}to{top:86%;transform:translateX(-50%) rotate(var(--r,0deg))}}
+
+/* ——— HAYALET EL ——— */
+.hayalet{position:absolute;z-index:30;width:0;height:0;pointer-events:none;--dx:0px;--dy:0px;--kay:120px;--tara:80px}
+.hayalet.gidiyor{opacity:0;transition:opacity .25s}
+.hayalet-kol{position:absolute;left:0;top:0;animation:1.9s ease-in-out both}
+.hayalet-el{position:absolute;left:-31px;top:-5px;width:96px;height:96px;opacity:.94;filter:drop-shadow(0 6px 10px #1d2b1c66);transform-origin:31px 5px;animation:1.9s ease-in-out both}
+.hayalet-el svg{width:100%;height:100%}
+.hayalet-dalga{position:absolute;left:-32px;top:-32px;width:64px;height:64px;border-radius:50%;border:6px solid #fff;opacity:0;animation:1.9s ease-out both}
+.hayalet-halka{position:absolute;left:-48px;top:-48px;width:96px;height:96px;border-radius:50%;border:8px solid #f4c542;opacity:0;animation:1.9s linear both}
+.hayalet-ok{position:absolute;left:-26px;top:-96px;width:52px;height:70px;filter:drop-shadow(0 4px 6px #1d2b1c55)}
+.hayalet-ok svg,.hayalet-iki-yon svg{width:100%;height:100%}
+.hayalet-ok.ikinci{left:calc(var(--dx) - 26px);top:calc(var(--dy) - 96px)}
+.hayalet-iki-yon{position:absolute;left:-70px;top:24px;width:140px;height:58px}
+
+.hayalet-dokun .hayalet-kol,.hayalet-basili .hayalet-kol{animation-name:hGir}
+.hayalet-dokun .hayalet-el{animation-name:hIkiBas}
+.hayalet-dokun .hayalet-dalga{animation-name:hIkiDalga}
+.hayalet-basili .hayalet-el{animation-name:hBasiliTut}
+.hayalet-basili .hayalet-halka{animation-name:hHalka}
+.hayalet-bekle-bas .hayalet-kol{animation-name:hBekle}
+.hayalet-bekle-bas .hayalet-el{animation-name:hGecBas}
+.hayalet-bekle-bas .hayalet-dalga{animation-name:hGecDalga}
+.hayalet-kaydir .hayalet-kol{animation-name:hKaydir}
+.hayalet-kaydir .hayalet-el{animation-name:hKaydirBas}
+.hayalet-sec-dokun .hayalet-kol{animation-name:hSecDokun}
+.hayalet-sec-dokun .hayalet-el{animation-name:hIkiBasUzak}
+.hayalet-sec-dokun .hayalet-dalga{display:none}
+.hayalet-tara .hayalet-kol{animation-name:hTara}
+.hayalet-tara .hayalet-dalga{display:none}
+@keyframes hGir{0%{transform:translate(70px,80px);opacity:0}20%,100%{transform:translate(0,0);opacity:1}}
+@keyframes hIkiBas{0%,24%{transform:scale(1)}31%{transform:scale(.8)}39%{transform:scale(1)}58%{transform:scale(1)}65%{transform:scale(.8)}73%,100%{transform:scale(1)}}
+@keyframes hIkiDalga{0%,29%{opacity:0;transform:scale(.4)}31%{opacity:.95;transform:scale(.5)}48%{opacity:0;transform:scale(1.7)}63%{opacity:0;transform:scale(.4)}65%{opacity:.95;transform:scale(.5)}82%,100%{opacity:0;transform:scale(1.7)}}
+@keyframes hBasiliTut{0%,24%{transform:scale(1)}32%,80%{transform:scale(.8)}88%,100%{transform:scale(1)}}
+@keyframes hHalka{0%,30%{opacity:0;transform:scale(.45)}34%{opacity:1;transform:scale(.5)}80%{opacity:1;transform:scale(1.15)}90%,100%{opacity:0;transform:scale(1.2)}}
+@keyframes hBekle{0%{transform:translate(70px,80px);opacity:0}18%{transform:translate(0,-10px);opacity:1}32%{transform:translate(0,-18px)}46%{transform:translate(0,-10px)}60%{transform:translate(0,-18px)}68%,100%{transform:translate(0,0);opacity:1}}
+@keyframes hGecBas{0%,68%{transform:scale(1)}75%{transform:scale(.8)}84%,100%{transform:scale(1)}}
+@keyframes hGecDalga{0%,73%{opacity:0;transform:scale(.4)}75%{opacity:.95;transform:scale(.5)}94%,100%{opacity:0;transform:scale(1.8)}}
+@keyframes hKaydir{0%{transform:translate(0,60px);opacity:0}14%{transform:translate(0,0);opacity:1}38%{transform:translate(calc(-1 * var(--kay)),0)}68%{transform:translate(var(--kay),0)}90%,100%{transform:translate(0,0);opacity:1}}
+@keyframes hKaydirBas{0%,14%{transform:scale(1)}20%,88%{transform:scale(.86)}94%,100%{transform:scale(1)}}
+@keyframes hSecDokun{0%{transform:translate(60px,70px);opacity:0}16%,34%{transform:translate(0,0);opacity:1}62%,100%{transform:translate(var(--dx),var(--dy));opacity:1}}
+@keyframes hIkiBasUzak{0%,20%{transform:scale(1)}26%{transform:scale(.8)}32%{transform:scale(1)}66%{transform:scale(1)}72%{transform:scale(.8)}80%,100%{transform:scale(1)}}
+@keyframes hTara{0%{transform:translate(0,40px);opacity:0}12%{transform:translate(0,0);opacity:1}32%{transform:translate(var(--tara),calc(var(--tara) * -.5))}52%{transform:translate(calc(var(--tara) * .4),calc(var(--tara) * .5))}72%{transform:translate(calc(-1 * var(--tara)),calc(var(--tara) * -.4))}92%,100%{transform:translate(0,0);opacity:1}}
+/* Azaltılmış hareket: el ve dalga yok; durağan ok (ve halka / iki yönlü ok). */
+.hayalet.durgun .hayalet-el,.hayalet.durgun .hayalet-dalga{display:none}
+.hayalet.durgun .hayalet-kol,.hayalet.durgun .hayalet-halka{animation:none}
+.hayalet.durgun .hayalet-halka{opacity:1;transform:none}
+
+/* ——— bitiş kutlaması ——— */
+.ciftlik-is-kutlama{position:absolute;left:50%;top:46%;width:0;height:0;pointer-events:none;z-index:31}
+.ciftlik-is-kutlama i{position:absolute;width:14px;height:14px;border-radius:3px;background:var(--oyun-canli);opacity:0}
+.ciftlik-is-kutlama i:nth-child(2n){background:var(--oyun-ikinci);border-radius:50%}
+.ciftlik-is-kutlama i:nth-child(3n){background:#f4c542}
+.ciftlik-is.kutlama .ciftlik-is-kutlama i{animation:isKonfeti .9s ease-out both}
+.ciftlik-is-kutlama i:nth-child(1){--x:-190px;--y:-120px}.ciftlik-is-kutlama i:nth-child(2){--x:-120px;--y:-190px;animation-delay:.03s}
+.ciftlik-is-kutlama i:nth-child(3){--x:-30px;--y:-220px;animation-delay:.06s}.ciftlik-is-kutlama i:nth-child(4){--x:60px;--y:-210px;animation-delay:.02s}
+.ciftlik-is-kutlama i:nth-child(5){--x:150px;--y:-170px;animation-delay:.05s}.ciftlik-is-kutlama i:nth-child(6){--x:210px;--y:-80px;animation-delay:.08s}
+.ciftlik-is-kutlama i:nth-child(7){--x:170px;--y:40px;animation-delay:.04s}.ciftlik-is-kutlama i:nth-child(8){--x:-170px;--y:30px;animation-delay:.07s}
+.ciftlik-is-kutlama i:nth-child(9){--x:-230px;--y:-40px;animation-delay:.09s}.ciftlik-is-kutlama i:nth-child(10){--x:100px;--y:-60px;animation-delay:.01s}
+@keyframes isKonfeti{0%{opacity:0;transform:translate(0) scale(.3) rotate(0)}18%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(1.3) rotate(200deg)}}
+.ciftlik-is.kutlama .ciftlik-is-ikon{animation:isIkonSevin .7s cubic-bezier(.3,1.6,.5,1)}
+@keyframes isIkonSevin{0%,100%{transform:none}45%{transform:translateY(-10px) scale(1.12) rotate(-4deg)}}
+.ciftlik-is.kutlama .ciftlik-is-kart{box-shadow:0 0 0 10px #86ad6855,0 26px 64px #16211455}
+
+@media(max-width:760px){
+ .ciftlik-is-kart{padding:10px 12px 14px;border-radius:26px;gap:8px}
+ .ciftlik-is-ikon{width:88px;height:88px;border-radius:24px}
+ .ciftlik-is-kapat{width:64px;height:64px}
+ .ciftlik-is-pipler{gap:8px}
+ .ciftlik-is-pipler i{width:22px;height:22px}
+ .doldur-sahne{grid-template-columns:1.1fr 1fr;padding:12px;gap:10px}
+ .doldur-hedef{display:none}
+ .doldur-dugme{width:124px;height:124px}
+ .ciftlik-is .bakim-araclari .nesne-karti{width:104px;min-height:104px}
+ .ciftlik-is .bakim-araclari .nesne-resmi{width:76px;height:76px}
+ .ciftlik-is .bakim-hayvani .hedef-resmi{width:170px;height:170px}
+}
+@media(max-height:760px) and (min-width:761px){
+ .ciftlik-is-kart{padding:10px 20px 14px;gap:8px}
+ .doldur-sahne,.silkele-sahne{height:clamp(260px,50vh,400px)}
+ .ciftlik-is .bakim-hayvani .hedef-resmi{width:180px;height:180px}
+}
+@media(prefers-reduced-motion:reduce){
+ .ciftlik-is,.ciftlik-is-kart,.doldur-hedef.icti,.doldur-sahne.tasti .doldur-kap,.silkele-agac.sallan,.ciftlik-is.kutlama .ciftlik-is-ikon{animation:none}
+ .ciftlik-is.kutlama .ciftlik-is-kutlama i{animation:none}
+ .doldur-sahne .doldur-sacilan{animation:none!important}
+ .silkele-ceviz{animation:none;top:86%}
+ .doldur-su.iniyor,.doldur-akis,.ciftlik-is-pipler i,.doldur-bant{transition:none}
+ .hayalet-kol,.hayalet-el,.hayalet-dalga,.hayalet-halka{animation:none!important}
+}
+.ciftlik-is.az-hareket,.ciftlik-is.az-hareket .ciftlik-is-kart,.ciftlik-is.az-hareket .silkele-agac.sallan,.ciftlik-is.az-hareket .doldur-hedef.icti{animation:none}
+.ciftlik-is.az-hareket .silkele-ceviz{animation:none;top:86%}
+.ciftlik-is.az-hareket .ciftlik-is-kutlama i{animation:none}

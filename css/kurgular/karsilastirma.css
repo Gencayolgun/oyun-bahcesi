@@ -1,0 +1,189 @@
+/* karsilastirma kurgusu (Şehir Faresi ile Tarla Faresi) — yalnız bu kurgunun ekranları.
+   Tahta ikiye bölünmüş bir pano: solda bir dünya, sağda öbürü, ortada harita.
+   Altta iki ev arasındaki yol, iki kefeli terazi ve sıradaki kart. */
+
+.karsilastirma-sayfasi{
+  --kars-sol:#c9a24a; --kars-sol-acik:#f7efd9; --kars-sol-koyu:#8a6a26;
+  --kars-sag:#c9785d; --kars-sag-acik:#f6e9e3; --kars-sag-koyu:#8e4a36;
+  --kars-guzel:#e0b054; --kars-zor:#8fa3b5;
+}
+
+/* ——— Pano ——— */
+.kars-pano{display:grid;grid-template-columns:250px 1fr 250px;flex:1;min-height:0}
+.kars-sutun{display:flex;flex-direction:column;min-height:0;overflow:auto;padding:20px 16px 16px;z-index:2}
+.kars-sol{background:var(--kars-sol-acik);border-right:1px solid #eadcb6}
+.kars-sag{background:var(--kars-sag-acik);border-left:1px solid #ecd3c8}
+.kars-sutun-bas{display:flex;align-items:center;gap:11px;padding-bottom:13px;margin-bottom:12px;border-bottom:2px solid}
+.kars-sol .kars-sutun-bas{border-color:var(--kars-sol)}
+.kars-sag .kars-sutun-bas{border-color:var(--kars-sag)}
+.kars-sutun-ikon{width:46px;height:46px;flex:none;display:block}
+.kars-sutun-ikon svg{width:100%;height:100%}
+.kars-sutun-bas .eyebrow{font-size:8px;letter-spacing:1.6px}
+.kars-sol .kars-sutun-bas .eyebrow{color:var(--kars-sol-koyu)}
+.kars-sag .kars-sutun-bas .eyebrow{color:var(--kars-sag-koyu)}
+.kars-sutun-bas h2{font-size:24px;line-height:1.05;letter-spacing:-.5px;margin:2px 0 3px}
+.kars-sutun-sayi{font-size:11px;color:var(--muted);font-weight:650}
+.kars-kartlar{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.kars-kart{display:flex;align-items:center;gap:9px;background:#fffdf7;border:1px solid #eee6d2;border-radius:11px;
+  padding:6px 9px 6px 7px;box-shadow:0 3px 8px #5a4a2a0d;border-left:4px solid var(--kars-guzel)}
+.kars-kart.zor{border-left-color:var(--kars-zor);background:#fbfcfd}
+.kars-kart-ikon{width:32px;height:32px;flex:none;display:block}
+.kars-kart-ikon svg{width:100%;height:100%}
+.kars-kart-metin{flex:1;min-width:0;line-height:1.25}
+.kars-kart-metin small{display:block;font-size:9px;color:var(--muted);font-weight:650;letter-spacing:.3px}
+.kars-kart-metin strong{display:block;font-size:13px;font-weight:650}
+.kars-isaret{width:20px;height:20px;flex:none;opacity:.9}
+.kars-isaret svg{width:100%;height:100%}
+.kars-kart.yeni{animation:kars-kart-gel 1.1s cubic-bezier(.2,1.3,.4,1) both;box-shadow:0 0 0 3px #ffe9a6,0 8px 18px #5a4a2a26}
+@keyframes kars-kart-gel{0%{opacity:0;transform:translateY(-26px) scale(.7) rotate(-4deg)}60%{opacity:1}100%{opacity:1;transform:none}}
+.kars-kartlar.sik{gap:4px}
+.kars-kartlar.sik .kars-kart{padding:3px 8px 3px 6px;border-radius:9px}
+.kars-kartlar.sik .kars-kart-ikon{width:24px;height:24px}
+.kars-kartlar.sik .kars-kart-metin small{display:none}
+.kars-kartlar.sik .kars-kart-metin strong{font-size:12px}
+.kars-kartlar.sik .kars-isaret{width:16px;height:16px}
+.kars-bos{font-size:11px;line-height:1.6;color:var(--muted);border:2px dashed #dcd3bd;border-radius:11px;padding:12px;text-align:center;margin-top:4px}
+.kars-sag .kars-bos{border-color:#e4cbc0}
+
+/* ——— Harita ——— */
+.kars-harita{min-width:0}
+.kars-baslik{max-width:min(380px,48%);background:#fffdf5d9;border-radius:14px;padding:13px 16px 12px;top:18px;left:18px;
+  box-shadow:0 6px 18px #385f4412}
+.kars-baslik .eyebrow{color:var(--accent)}
+.kars-baslik h2{font-size:24px;margin-top:3px}
+.kars-hikaye{font-size:11px;line-height:1.65;color:#6f7b69;margin-top:6px}
+.kars-soz{font-size:11px;line-height:1.5;color:var(--accent);font-style:italic;margin-top:6px}
+
+/* ——— Alt şerit ——— */
+.kars-alt{display:flex;align-items:center;gap:26px;background:var(--paper);padding:14px 30px;border-top:1px solid #dfe5d6;z-index:3;min-height:124px}
+
+/* İlerleme: iki ev arasında yol */
+.kars-yol{width:250px;flex:none}
+.kars-yol-bas{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.kars-yol-bas .eyebrow{font-size:8px;letter-spacing:1.5px}
+.kars-yol-bas strong{font-size:16px;font-weight:650;letter-spacing:-.4px}
+.kars-yol-serit{display:flex;align-items:center;gap:6px;margin-top:8px}
+.kars-ev{width:34px;height:34px;flex:none}
+.kars-ev svg{width:100%;height:100%}
+.kars-yol-ic{position:relative;flex:1;height:34px}
+.kars-yol-iz{position:absolute;left:0;right:0;top:22px;display:flex;gap:2px}
+.kars-yol-iz i{flex:1;height:6px;border-radius:3px;background:#e7e3d4}
+.kars-yol-iz i.sol.gecti{background:var(--kars-sol)}
+.kars-yol-iz i.sag.gecti{background:var(--kars-sag)}
+.kars-yol-iz i.simdi{background:#fff2b7;box-shadow:0 0 0 2px #e8c96a}
+.kars-yolcu{position:absolute;top:-8px;width:32px;height:30px;transform:translateX(-50%);transition:left .9s cubic-bezier(.3,1.2,.5,1)}
+.kars-yolcu svg{width:100%;height:100%}
+.kars-yolcu.geri svg{transform:scaleX(-1)}
+.kars-yol-not{display:block;font-size:10px;color:var(--muted);margin-top:6px;line-height:1.45}
+
+/* Terazi: kol --aci kadar döner, kefeler dik asılı kalır */
+.kars-terazi{position:relative;width:210px;flex:none;text-align:center;--aci:0deg}
+.kars-terazi>.eyebrow{font-size:8px;letter-spacing:1.4px}
+.kars-terazi-govde{position:relative;height:74px;margin:2px auto 0;width:190px}
+.kars-terazi-direk{position:absolute;left:50%;top:8px;width:6px;height:56px;margin-left:-3px;border-radius:3px;background:#a5794d}
+.kars-terazi-ayak{position:absolute;left:50%;bottom:4px;width:54px;height:8px;margin-left:-27px;border-radius:6px;background:#8e6a44}
+.kars-terazi-kol{position:absolute;left:12px;right:12px;top:8px;height:6px;border-radius:3px;background:#b98d5a;
+  transform:rotate(var(--aci));transition:transform 1.3s cubic-bezier(.3,1.5,.5,1)}
+.kars-terazi-kol:after{content:'';position:absolute;left:50%;top:-3px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#8e6a44}
+.kars-kefe{position:absolute;top:3px;width:62px;margin-left:-31px;transform-origin:50% 0;
+  transform:rotate(calc(-1 * var(--aci)));transition:transform 1.3s cubic-bezier(.3,1.5,.5,1)}
+.kars-kefe.sol{left:0}.kars-kefe.sag{left:100%}
+.kars-kefe:before{content:'';display:block;margin:0 auto;width:44px;height:18px;
+  background:linear-gradient(to top right,transparent calc(50% - 1px),#a88b65 50%,transparent calc(50% + 1px)) left/50% 100% no-repeat,
+             linear-gradient(to top left,transparent calc(50% - 1px),#a88b65 50%,transparent calc(50% + 1px)) right/50% 100% no-repeat}
+.kars-kefe-tas{display:flex;flex-wrap:wrap-reverse;justify-content:center;align-content:flex-start;gap:2px;min-height:10px;
+  padding:3px 4px 4px;border-radius:0 0 22px 22px;border-top:3px solid}
+.kars-kefe.sol .kars-kefe-tas{background:#f3e3b6;border-color:var(--kars-sol)}
+.kars-kefe.sag .kars-kefe-tas{background:#f3d6ca;border-color:var(--kars-sag)}
+.kars-kefe-tas i{width:7px;height:7px;border-radius:50%;background:var(--kars-guzel)}
+.kars-kefe-tas i.zor{background:var(--kars-zor)}
+.kars-kefe-tas i.yeni{animation:kars-tas-dus .9s .25s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes kars-tas-dus{0%{transform:translateY(-22px) scale(1.6);opacity:0}100%{transform:none;opacity:1}}
+.kars-kefe-ad{display:block;font-size:9px;font-weight:700;margin-top:2px;color:#6f7b69;white-space:nowrap}
+.kars-terazi-yazi{display:block;font-size:10px;color:var(--muted);line-height:1.35;margin-top:10px}
+.kars-terazi.dengede .kars-terazi-yazi{color:#4c8050;font-weight:700}
+.kars-bildiri{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;pointer-events:none;
+  background:#fffdf5;border:1px solid #eadfbf;border-radius:10px;padding:6px 12px;box-shadow:0 8px 20px #5a4a2a1f;
+  animation:kars-bildiri 3.6s ease both}
+.kars-bildiri .eyebrow{font-size:7px;letter-spacing:1.4px}
+.kars-bildiri strong{font-size:12px}
+.kars-bildiri.sol{border-left:4px solid var(--kars-sol)}
+.kars-bildiri.sag{border-left:4px solid var(--kars-sag)}
+@keyframes kars-bildiri{0%{opacity:0;transform:translate(-50%,10px)}12%,78%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-6px)}}
+
+/* Sıradaki kart */
+.kars-siradaki{flex:1;min-width:0;display:flex;align-items:center;gap:14px}
+.kars-dost{width:64px;height:62px;flex:none}
+.kars-dost svg{width:100%;height:100%}
+.kars-siradaki-metin .eyebrow{font-size:8px;letter-spacing:1.3px;color:var(--accent)}
+.kars-siradaki-metin h2{font-size:16px;line-height:1.35;letter-spacing:-.3px;margin:4px 0 3px}
+.kars-siradaki-metin>p{font-size:11px;line-height:1.5;color:#87907d}
+.kars-siradaki .siradaki-cocuk{margin-top:7px}
+
+/* ——— Bölüm sonu: iki sütunun karşılaştırması ——— */
+.kars-odul .hikaye-karti{max-width:900px;padding-top:24px}
+.kars-odul .hikaye-resim{width:104px;height:104px;margin-bottom:10px}
+.kars-odul .hikaye-karti h1{font-size:40px;margin:10px 0 12px}
+.kars-odul .hikaye-karti>p{font-size:16px}
+.kars-kiyas{display:grid;grid-template-columns:1fr 150px 1fr;gap:16px;width:100%;margin-top:18px;text-align:left}
+.kars-kiyas-yan{border-radius:16px;padding:12px 14px}
+.kars-kiyas-yan.sol{background:#f7efd9;border:1px solid #eadcb6}
+.kars-kiyas-yan.sag{background:#f6e9e3;border:1px solid #ecd3c8}
+.kars-kiyas-bas{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.kars-kiyas-bas .kars-sutun-ikon{width:34px;height:34px}
+.kars-kiyas-bas strong{font-size:17px}
+.kars-kiyas-bas small{margin-left:auto;font-size:10px;color:var(--muted);font-weight:650}
+.kars-kiyas-liste{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:5px}
+.kars-kiyas-liste li{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;background:#fffdf7;border-radius:999px;
+  padding:3px 10px 3px 4px;border:1px solid #eee6d2;opacity:.62}
+.kars-kiyas-liste li.bu-bolum{opacity:1;box-shadow:0 0 0 2px #ffe9a6}
+.kars-kiyas-liste li.zor{background:#f4f7f9}
+.kars-kiyas-liste li.bos{opacity:1;color:var(--muted);padding:4px 10px}
+.kars-kiyas-liste .kars-kart-ikon{width:22px;height:22px}
+.kars-kiyas-orta{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;--aci:0deg}
+.kars-kiyas-orta strong{font-size:22px;letter-spacing:1px}
+.kars-kiyas-orta small{font-size:10px;line-height:1.45;color:var(--muted)}
+.kars-mini-terazi{position:relative;width:96px;height:46px}
+.kars-mini-terazi .direk{position:absolute;left:46px;top:8px;width:4px;height:36px;border-radius:2px;background:#a5794d}
+.kars-mini-terazi .kol{position:absolute;left:4px;right:4px;top:8px;height:5px;border-radius:3px;
+  background:linear-gradient(90deg,var(--kars-sol,#c9a24a) 0 50%,var(--kars-sag,#c9785d) 50%);transform:rotate(var(--aci))}
+.kars-odul{--kars-sol:#c9a24a;--kars-sag:#c9785d}
+
+@media(max-width:1100px){
+  .kars-pano{grid-template-columns:200px 1fr 200px}
+  .kars-sutun{padding:16px 12px}
+  .kars-sutun-bas h2{font-size:20px}
+  .kars-kart-metin strong{font-size:12px}
+  .kars-alt{flex-wrap:wrap;gap:14px 20px;padding:12px 20px}
+  .kars-siradaki{order:4;flex-basis:100%}
+  .kars-baslik{max-width:calc(100% - 350px);min-width:180px;padding:10px 13px}
+  .kars-baslik h2{font-size:19px}
+  .kars-hikaye{display:none}
+}
+@media(max-height:760px) and (min-width:761px){
+  .kars-hikaye{display:none}
+  .kars-alt{min-height:104px;padding-top:10px;padding-bottom:10px}
+  .kars-kart{padding-top:4px;padding-bottom:4px}
+  .kars-kart-ikon{width:26px;height:26px}
+}
+@media(max-width:760px){
+  .kars-pano{display:flex;flex-direction:column;flex:none}
+  .kars-harita{order:-1;height:430px;flex:none}
+  .kars-sutun{max-height:240px}
+  .kars-baslik{top:12px;left:12px;max-width:62%}
+  .kars-alt{flex-direction:column;align-items:stretch}
+  .kars-yol,.kars-terazi{width:auto}
+  .kars-kiyas{grid-template-columns:1fr}
+  .kars-odul .hikaye-karti h1{font-size:30px}
+}
+@media(min-width:1700px){
+  .kars-pano{grid-template-columns:320px 1fr 320px}
+  .kars-kart-metin strong{font-size:15px}
+  .kars-kart-ikon{width:40px;height:40px}
+  .kars-siradaki-metin h2{font-size:20px}
+  .kars-siradaki-metin>p{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  .kars-kart.yeni,.kars-kefe-tas i.yeni,.kars-bildiri{animation:none}
+  .kars-terazi-kol,.kars-kefe,.kars-yolcu{transition:none}
+}
