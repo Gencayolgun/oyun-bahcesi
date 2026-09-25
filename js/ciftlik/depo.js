@@ -114,20 +114,8 @@ export function bellekDepolama(ilk = {}) {
   };
 }
 
-/* ——————————————————————————————— kimlikler ——————————————————————————————— */
-
-const KUCUK = 'abcdefghijklmnopqrstuvwxyz0123456789';
-const BUYUK = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // karışan I/O/0/1 yok
-function rastgele(n, abece) {
-  const a = new Uint32Array(n);
-  try { globalThis.crypto.getRandomValues(a); } catch { for (let i = 0; i < n; i++) a[i] = Math.floor(Math.random() * 2 ** 32); }
-  let s = '';
-  for (let i = 0; i < n; i++) s += abece[a[i] % abece.length];
-  return s;
-}
-export const yeniCihazId = () => 'c_' + rastgele(8, KUCUK);
-export const yeniOid = () => 'o_' + rastgele(8, KUCUK);
-export const yeniSinifKod = () => rastgele(6, BUYUK);
+export {rastgele, KUCUK, yeniCihazId, yeniOid, yeniSinifKod, yeniSinif, sinifYamala} from './ortak/sinif.js';
+import {rastgele, KUCUK, yeniCihazId, yeniSinif, sinifYamala} from './ortak/sinif.js';
 
 /* ——————————————————————————————— PIN ——————————————————————————————— */
 
@@ -148,88 +136,6 @@ export async function pinKarma(pin, tuz) {
   return 'f1:' + (h >>> 0).toString(16);
 }
 export const PIN_DESEN = /^[0-9]{6,12}$/;
-
-/* ——————————————————————————————— sınıf ——————————————————————————————— */
-
-/** Kurulum ayarından yeni sınıf belgesi (ad YOK). Öğrencilere sembol ve renk sırayla verilir. */
-export function yeniSinif({
-  kod = yeniSinifKod(), bugun, tz, takvim = 'okul-gunleri', tahtaIs = 2, ziyaret = true,
-  konu = null, uniteGun = VARSAYILAN_UNITE, ogrenciSayisi = 20, yas = '3-4', ogrenciler = null
-} = {}) {
-  if (!Number.isInteger(bugun)) throw new TypeError('yeniSinif: bugun gerekli');
-  const n = Math.max(1, Math.min(SINIR.ogrenci, Math.floor(ogrenciSayisi) || 1));
-  const liste = ogrenciler || Array.from({ length: n }, (_, i) => ({
-    id: yeniOid(), sembol: SEMBOLLER[i], renk: RENKLER[i % RENKLER.length], yas: YAS_GRUPLARI.includes(yas) ? yas : '3-4'
-  }));
-  return {
-    sema: SEMA,
-    kod,
-    olusturmaGun: bugun,
-    ayarlar: {
-      tz: tzGecerli(tz) ? tz : VARSAYILAN_TZ,
-      takvim: TAKVIMLER.includes(takvim) ? takvim : 'okul-gunleri',
-      tahtaIs: tahtaIs === 3 ? 3 : 2,
-      ziyaret: ziyaret !== false
-    },
-    konu: KONU_TURLERI.includes(konu)
-      ? { tur: konu, basGun: bugun, uniteGun: UNITE_GUNLERI.includes(uniteGun) ? uniteGun : VARSAYILAN_UNITE }
-      : null,
-    eskiKonular: [],
-    donmalar: [],
-    ogrenciler: liste
-  };
-}
-
-/**
- * Sınıf yaması (saf; yerelTasima ve 1c sunucusu aynı kuralı kullanır). Yeni belge döner.
- * yama: {ayarlar?: {takvim, tahtaIs, ziyaret, tz}, konu?: {tur, uniteGun} | null,
- *        ogrenciEkle?: [{sembol?, renk?, yas?}], ogrenciCikar?: [oid], ogrenciGuncelle?: [{id, sembol?, renk?, yas?}]}
- * Konu değişince eski konu eskiKonular'a geçer; yeni konunun başlangıcı bugündür.
- */
-export function sinifYamala(sinif, yama = {}, bugun) {
-  const s = klon(sinif);
-  const a = yama.ayarlar;
-  if (a && typeof a === 'object') {
-    if (TAKVIMLER.includes(a.takvim)) s.ayarlar.takvim = a.takvim;
-    if (a.tahtaIs === 2 || a.tahtaIs === 3) s.ayarlar.tahtaIs = a.tahtaIs;
-    if (typeof a.ziyaret === 'boolean') s.ayarlar.ziyaret = a.ziyaret;
-    if (tzGecerli(a.tz)) s.ayarlar.tz = a.tz;
-  }
-  if ('konu' in yama) {
-    const k = yama.konu;
-    const eski = s.konu;
-    if (k === null) {
-      if (eski) s.eskiKonular = [...(s.eskiKonular || []), eski].slice(-40);
-      s.konu = null;
-    } else if (k && KONU_TURLERI.includes(k.tur)) {
-      const unite = UNITE_GUNLERI.includes(k.uniteGun) ? k.uniteGun : (eski?.uniteGun ?? VARSAYILAN_UNITE);
-      if (!eski || eski.tur !== k.tur) {
-        if (eski) s.eskiKonular = [...(s.eskiKonular || []), eski].slice(-40);
-        s.konu = { tur: k.tur, basGun: Number.isInteger(k.basGun) ? k.basGun : bugun, uniteGun: unite };
-      } else {
-        s.konu = { ...eski, uniteGun: unite };   // aynı tür: yalnız süre değişir, bitki yerinde kalır
-      }
-    }
-  }
-  const cikar = new Set(Array.isArray(yama.ogrenciCikar) ? yama.ogrenciCikar : []);
-  if (cikar.size) s.ogrenciler = s.ogrenciler.filter(o => !cikar.has(o.id));
-  for (const g of Array.isArray(yama.ogrenciGuncelle) ? yama.ogrenciGuncelle : []) {
-    const o = s.ogrenciler.find(x => x.id === g?.id);
-    if (!o) continue;
-    if (YAS_GRUPLARI.includes(g.yas)) o.yas = g.yas;
-    if (RENKLER.includes(g.renk)) o.renk = g.renk;
-    if (SEMBOLLER.includes(g.sembol) && !s.ogrenciler.some(x => x !== o && x.sembol === g.sembol)) o.sembol = g.sembol;
-  }
-  for (const e of Array.isArray(yama.ogrenciEkle) ? yama.ogrenciEkle : []) {
-    if (s.ogrenciler.length >= SINIR.ogrenci) break;
-    const kullanilan = new Set(s.ogrenciler.map(o => o.sembol));
-    const sembol = SEMBOLLER.includes(e?.sembol) && !kullanilan.has(e.sembol) ? e.sembol : SEMBOLLER.find(x => !kullanilan.has(x));
-    if (!sembol) break;
-    const renk = RENKLER.includes(e?.renk) ? e.renk : RENKLER[SEMBOLLER.indexOf(sembol) % RENKLER.length];
-    s.ogrenciler.push({ id: OID_DESEN.test(e?.id || '') ? e.id : yeniOid(), sembol, renk, yas: YAS_GRUPLARI.includes(e?.yas) ? e.yas : '3-4' });
-  }
-  return s;
-}
 
 /* ——————————————————————————————— yerel taşıma ('yalnız bu cihaz') ——————————————————————————————— */
 
@@ -373,7 +279,10 @@ export class IstemciDepo {
 
   async hazirla() {
     const c = this.depolama.al(ANAHTAR.cihaz);
-    this.cihaz = c && CIHAZ_DESEN.test(c.id) ? { id: c.id, sinifKod: c.sinifKod ?? null, anahtar: c.anahtar ?? null, kip: c.kip || this.tasima.kip, seq: Number.isInteger(c.seq) ? c.seq : 0 } : null;
+    this.cihaz = c && CIHAZ_DESEN.test(c.id) ? {
+      id: c.id, sinifKod: c.sinifKod ?? null, anahtar: c.anahtar ?? null, kip: c.kip || this.tasima.kip,
+      seq: Number.isInteger(c.seq) ? c.seq : 0, ...(SINIF_KOD_DESEN.test(c.oncekiKod || '') ? { oncekiKod: c.oncekiKod } : {})
+    } : null;
     if (!this.cihaz?.sinifKod || !SINIF_KOD_DESEN.test(this.cihaz.sinifKod)) return { cihaz: this.cihaz, sinif: null };
     const kod = this.kod;
     const onbellekSinif = this.depolama.al(ANAHTAR.sinif(kod));
@@ -385,6 +294,12 @@ export class IstemciDepo {
       this._sinifAyarla(r.sinif);
       for (const o of r.ozet || []) this._ozet.set(o.oid, o);
     } catch (e) {
+      // Sınıf kapatılmış (404) ya da bu cihazın anahtarı geçersiz (401): bulutta bu cihazdaki sınıf kayıtları temizlenir.
+      // Sınıf kapatılmış (404 sinif-yok): bu cihazdaki sınıf kayıtları temizlenir.
+      if (this.tasima.kip === 'bulut' && e?.durum === 404 && e?.kod === 'sinif-yok') { this._sinifBirak(kod); return { cihaz: this.cihaz, sinif: null }; }
+      // Bu cihazın anahtarı artık geçersiz (401): bağ çözülür ama adlar ve gönderilmemiş işler KALIR;
+      // öğretmen cihazı yeniden bağlayınca kuyruk gider (cihazBagla).
+      if (this.tasima.kip === 'bulut' && e?.durum === 401) { this._bagKoptu(kod); return { cihaz: this.cihaz, sinif: null }; }
       if (e?.durum === 404 && !this.sinif) { this.cihaz = { ...this.cihaz, sinifKod: null }; this._cihazYaz(); return { cihaz: this.cihaz, sinif: null }; }
     }
     if (!this.sinif) return { cihaz: this.cihaz, sinif: null };
@@ -444,10 +359,12 @@ export class IstemciDepo {
     if (!tzGecerli(tz)) { try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { tz = VARSAYILAN_TZ; } }
     const sinif = yeniSinif({ ...ayar, tz, bugun });
     if (ayar.pin !== undefined && ayar.pin !== '' && !PIN_DESEN.test(String(ayar.pin))) throw new Error('pin');
-    const r = await this.tasima.sinifKur(sinif, { pin: ayar.pin });
+    const r = await this.tasima.sinifKur(sinif, { pin: ayar.pin, kurulumKodu: ayar.kurulumKodu });
     this._zaman(r);
     const eski = this.cihaz;
-    this.cihaz = { id: eski?.id && CIHAZ_DESEN.test(eski.id) ? eski.id : yeniCihazId(), sinifKod: r.sinif.kod, anahtar: r.anahtar ?? null, kip: this.tasima.kip, seq: eski?.seq || 0 };
+    // Çevrimiçi sınıfta cihaz kimliğini sunucu verir (anahtara bağlı); yerelde cihazın kendi kimliği kalır.
+    const id = CIHAZ_DESEN.test(r.cihaz || '') ? r.cihaz : eski?.id && CIHAZ_DESEN.test(eski.id) ? eski.id : yeniCihazId();
+    this.cihaz = { id, sinifKod: r.sinif.kod, anahtar: r.anahtar ?? null, kip: this.tasima.kip, seq: id === eski?.id ? eski?.seq || 0 : 0 };
     this._cihazYaz();
     this._onbellek.clear(); this._gorunum.clear(); this._ozet.clear(); this._kuyruk = [];
     this._sinifAyarla(r.sinif);
@@ -582,43 +499,46 @@ export class IstemciDepo {
     try { return await is; } finally { if (this._gonderiyor === is) this._gonderiyor = null; }
   }
 
+  /* Kuyruk ÖZGÜN SIRASIYLA gider: yalnız ardışık ve aynı (çiftlik, oyuncu) komutları tek istekte birleşir.
+     (Sunucu cihaz başına en büyük sıra numarasını tutar; sırası bozulan komut 'zaten' sayılıp kaybolurdu.)
+     Kalıcı ret (400/403/404/413): o komutlar düşer, etkisi sessizce geri alınır. Geçici hata (ağ, 401, 409,
+     5xx): gönderim durur, kuyruk korunur; yeniden deneme aralığı her hatada ikiye katlanır (en çok 5 dk). */
   async _gonder() {
-    let gonderilen = 0;
-    const gruplar = [];
-    for (const k of this._kuyruk) {
-      const oyuncu = k.rol === 'ziyaretci' ? k.kim : k.oid;
-      let g = gruplar.find(x => x.oid === k.oid && x.oyuncu === oyuncu);
-      if (!g) gruplar.push(g = { oid: k.oid, oyuncu, liste: [] });
-      g.liste.push(k);
-    }
-    let hata = null;
-    for (const g of gruplar) {
-      for (let i = 0; i < g.liste.length; i += SINIR.komut) {
-        const parca = g.liste.slice(i, i + SINIR.komut);
-        try {
-          const r = await this.tasima.islem(this.kod, g.oid, parca.map(k => k.komut), { oyuncu: g.oyuncu });
-          this._zaman(r);
-          const gid = new Set(parca.map(k => k.komut.id));
+    let gonderilen = 0, hata = null;
+    const oyuncu = k => (k.rol === 'ziyaretci' ? k.kim : k.oid);
+    while (this._kuyruk.length) {
+      const ilk = this._kuyruk[0];
+      const parca = [];
+      for (const k of this._kuyruk) {
+        if (k.oid !== ilk.oid || oyuncu(k) !== oyuncu(ilk) || parca.length >= SINIR.komut) break;
+        parca.push(k);
+      }
+      const gid = new Set(parca.map(k => k.komut.id));
+      try {
+        const r = await this.tasima.islem(this.kod, ilk.oid, parca.map(k => k.komut), { oyuncu: oyuncu(ilk) });
+        this._zaman(r);
+        this._kuyruk = this._kuyruk.filter(k => !gid.has(k.komut.id));
+        this._kuyrukYaz();
+        const d = ciftlikOku(r.ciftlik);
+        if (d) { this._onbellek.set(ilk.oid, d); this.depolama.yaz(ANAHTAR.ciftlik(this.kod, ilk.oid), d); }
+        gonderilen += parca.length;
+        this._gorunumKur(ilk.oid, 'eslesme');
+      } catch (e) {
+        hata = e;
+        if (e?.durum === 403 || e?.durum === 400 || e?.durum === 404 || e?.durum === 413) {
           this._kuyruk = this._kuyruk.filter(k => !gid.has(k.komut.id));
           this._kuyrukYaz();
-          const d = ciftlikOku(r.ciftlik);
-          if (d) { this._onbellek.set(g.oid, d); this.depolama.yaz(ANAHTAR.ciftlik(this.kod, g.oid), d); }
-          gonderilen += parca.length;
-          this._gorunumKur(g.oid, 'eslesme');
-        } catch (e) {
-          hata = e;
-          if (e?.durum === 403 || e?.durum === 400 || e?.durum === 404) {
-            // Kalıcı red: komutlar düşer, etkisi sessizce geri alınır.
-            const gid = new Set(parca.map(k => k.komut.id));
-            this._kuyruk = this._kuyruk.filter(k => !gid.has(k.komut.id));
-            this._kuyrukYaz();
-            if (this._onbellek.has(g.oid)) this._gorunumKur(g.oid, 'eslesme');
-          } else break;
+          if (this._onbellek.has(ilk.oid)) this._gorunumKur(ilk.oid, 'eslesme');
+          continue;
         }
+        break;
       }
     }
-    if (this._kuyruk.length) this._planla(this.aralik);
-    else if (this._zamanlayici) { clearTimeout(this._zamanlayici); this._zamanlayici = null; }   // kuyruk boşken istek yok
+    if (this._zamanlayici) { clearTimeout(this._zamanlayici); this._zamanlayici = null; }
+    if (this._kuyruk.length) {
+      this._hataSay = hata ? (this._hataSay || 0) + 1 : 0;
+      this._planla(Math.min(this.aralik * 2 ** Math.max(0, this._hataSay - 1), 5 * 60 * 1000));
+    } else this._hataSay = 0;                                            // kuyruk boşken istek yok
     return { gonderilen, kalan: this._kuyruk.length, hata: hata ? String(hata.message || hata) : null };
   }
 
@@ -647,9 +567,44 @@ export class IstemciDepo {
     if (temiz) a[oid] = temiz; else delete a[oid];
     this.depolama.yaz(ANAHTAR.adlar(this.kod), a);
   }
+  /** Öğretmen PIN'i. Son denemenin nedeni depo.pinSonuc'ta: 'tamam' | 'yanlis' | 'kilitli' | 'ag'. */
   async pinDogrula(pin) {
     if (!this.kod) return false;
-    try { return !!(await this.tasima.pinDogrula(this.kod, String(pin ?? ''))).tamam; } catch { return false; }
+    try {
+      const r = await this.tasima.pinDogrula(this.kod, String(pin ?? ''));
+      this._zaman(r);
+      this.pinSonuc = r.tamam ? 'tamam' : r.kilitli ? 'kilitli' : 'yanlis';
+      return !!r.tamam;
+    } catch (e) { this.pinSonuc = e?.durum === 429 ? 'kilitli' : e?.durum ? 'yanlis' : 'ag'; return false; }
+  }
+
+  /** Bu cihazın sınıf bağını çözer: sınıfın önbelleği, kuyruğu ve adları silinir; cihaz kimliği ve sırası kalır. */
+  _sinifBirak(kod = this.kod) {
+    for (const k of this.depolama.anahtarlar()) {
+      if (k === ANAHTAR.sinif(kod) || k === ANAHTAR.adlar(kod) || k === ANAHTAR.oynayan(kod) ||
+        k.startsWith(`ciftci:${kod}:`) || k.startsWith(`ciftci-gorulen:${kod}:`) || k.startsWith(`ciftci-yerel:`) && k.includes(`:${kod}`)) this.depolama.sil(k);
+    }
+    this._kuyruk = [];
+    this._kuyrukYaz();
+    this.sinif = null;
+    this._onbellek.clear(); this._gorunum.clear(); this._ozet.clear();
+    if (this.cihaz) { this.cihaz = { ...this.cihaz, sinifKod: null, anahtar: null }; this._cihazYaz(); }
+  }
+
+  /** Anahtar geçersiz: sınıf bağı çözülür; adlar, önbellek ve gönderilmemiş işler bu cihazda kalır. */
+  _bagKoptu(kod = this.kod) {
+    if (this._zamanlayici) { clearTimeout(this._zamanlayici); this._zamanlayici = null; }
+    this._kuyruk = [];                       // bellekten; depodaki kuyruk (ciftci-kuyruk) korunur
+    this.sinif = null;
+    this._onbellek.clear(); this._gorunum.clear(); this._ozet.clear();
+    if (this.cihaz) { this.cihaz = { ...this.cihaz, sinifKod: null, anahtar: null, oncekiKod: kod }; this._cihazYaz(); }
+  }
+
+  /** Öğretmen: 'Sınıfı kapat' — sunucudaki (ya da bu cihazdaki) sınıf silinir, bu cihaz da temizlenir. */
+  async sinifKapat() {
+    if (!this.kod) return;
+    if (this.tasima.sinifSil) await this.tasima.sinifSil(this.kod);
+    this.sifirla();
   }
 
   /** Bu cihazdaki bütün ciftci-* kayıtlarını siler ('sınıfı kapat', testler). */
@@ -684,6 +639,88 @@ export class BulutDepo extends IstemciDepo {
   constructor({ saat, tasima, depolama = yerelDepolama(), aralik = GONDERIM_ARALIGI } = {}) {
     if (!tasima || tasima.kip !== 'bulut') throw new Error('BulutDepo: bulut taşıması gerekli (Aşama 1c)');
     super({ tasima, saat, depolama, anindaGonder: false, aralik });
+    tasima.kimlikBagla?.(() => this.cihaz);
+  }
+}
+
+const agYok = async () => { const e = new Error('ag'); e.ag = true; throw e; };
+const KAPALI_BULUT = Object.freeze({
+  kip: 'bulut', kapali: true, kimlikBagla() {},
+  saglik: agYok, sinifAl: agYok, sinifKur: agYok, bagla: agYok, sinifGuncelle: agYok, sinifSil: agYok,
+  ciftlikAl: agYok, islem: agYok, pinDogrula: agYok
+});
+
+/**
+ * Sayfanın kullandığı depo: 'yalnız bu cihaz' (yerelTasima) ile çevrimiçi (bulutTasima) arasında
+ * cihazın seçimine göre geçer. Arayüz YerelDepo/BulutDepo ile aynı; ek olarak:
+ *   depo.bulutVar()                 → bu yayında çevrimiçi kayıt (API kökü) var mı
+ *   await depo.sinifKur({..., kip: 'bulut', kurulumKodu, pin}) → çevrimiçi sınıf
+ *   await depo.cihazBagla(kod, pin) → bu cihazı var olan çevrimiçi sınıfa bağlar
+ */
+export class CiftlikDepo extends IstemciDepo {
+  constructor({ saat, depolama = yerelDepolama(), bulut = null, aralik = GONDERIM_ARALIGI } = {}) {
+    const yerel = yerelTasima({ depolama, saat });
+    super({ tasima: yerel, saat, depolama, anindaGonder: true, aralik });
+    this._yerel = yerel;
+    this._bulut = bulut && bulut.kip === 'bulut' ? bulut : null;
+    this._bulut?.kimlikBagla?.(() => this.cihaz);
+  }
+  bulutVar() { return !!this._bulut; }
+  kip() { return this.tasima.kip; }
+  /* Çevrimiçi bağlı cihaz, API adresi olmayan bir derlemeyle açılırsa YEREL taşımaya düşmez (yerel taşıma
+     sınıfı tanımaz, işleri 'kalıcı ret' sayıp silerdi): taşıma 'bağlantı yok' gibi davranır, kuyruk korunur. */
+  _kipSec(kip) {
+    if (kip === 'bulut') { this.tasima = this._bulut || KAPALI_BULUT; this.anindaGonder = false; }
+    else { this.tasima = this._yerel; this.anindaGonder = true; }
+  }
+  async hazirla() {
+    const c = this.depolama.al(ANAHTAR.cihaz);
+    this._kipSec(c?.kip);
+    const r = await super.hazirla();
+    this._gorunurlukBagla();
+    return r;
+  }
+  /* Çevrimiçiyken sekme yeniden görünür olunca sunucu saatine yeniden eşitlenir (cihaz uyurken
+     performance.now durabilir; gün geride kalmasın). Tek hafif istek; kuyruk doluysa o da gider. */
+  _gorunurlukBagla() {
+    if (this._gorunurluk || typeof document === 'undefined') return;
+    this._gorunurluk = () => {
+      if (document.visibilityState !== 'visible' || this.tasima.kip !== 'bulut' || !this.kod) return;
+      if (this._kuyruk.length) { this.bosalt(); return; }
+      this.tasima.saglik?.().then(r => this._zaman(r)).catch(() => {});
+    };
+    try { document.addEventListener('visibilitychange', this._gorunurluk); } catch {}
+  }
+  async sinifKur(ayar = {}) {
+    const onceki = this.tasima;
+    this._kipSec(ayar.kip === 'bulut' ? 'bulut' : 'yerel');
+    if (ayar.kip === 'bulut' && !this._bulut) throw new Error('bulut-yok');
+    try { return await super.sinifKur(ayar); } catch (e) { this._kipSec(onceki.kip); throw e; }
+  }
+  async cihazBagla(kod, pin) {
+    if (!this._bulut) throw new Error('bulut-yok');
+    const k = String(kod ?? '').trim().toUpperCase().replace(/[\s-]/g, '');
+    if (!SINIF_KOD_DESEN.test(k)) { const e = new Error('kod'); e.durum = 400; throw e; }
+    const r = await this._bulut.bagla(k, String(pin ?? ''));
+    this._kipSec('bulut');
+    this._zaman(r);
+    const eski = this.cihaz;
+    const id = CIHAZ_DESEN.test(r.cihaz || '') ? r.cihaz : eski?.id && CIHAZ_DESEN.test(eski.id) ? eski.id : yeniCihazId();
+    this.cihaz = { id, sinifKod: r.sinif.kod, anahtar: r.anahtar, kip: 'bulut', seq: id === eski?.id ? eski?.seq || 0 : 0 };
+    this._onbellek.clear(); this._gorunum.clear(); this._ozet.clear();
+    // Bağı kopmuş bu cihazda aynı sınıfa gönderilmemiş işler varsa YENİ cihaz kimliğiyle sıraya girer
+    // (sunucu komutu yalnız anahtarının cihaz kimliğiyle kabul eder). Aynı iş iki kez uygulanırsa bile
+    // ortak/uygula.js durum denetimiyle (ekili parsel, kota, hazır olmayan hasat) çift sayılmaz.
+    this._kuyruk = (this.depolama.al(ANAHTAR.kuyruk) || [])
+      .filter(k => k?.kod === r.sinif.kod && KOMUT_ID_DESEN.test(k?.komut?.id || ''))
+      .map(k => ({ ...k, komut: { ...k.komut, id: `${id}:${++this.cihaz.seq}` } }));
+    this._cihazYaz();
+    this._kuyrukYaz();
+    this._sinifAyarla(r.sinif);
+    await this._hepsiniYukle();
+    this._onlineBagla();
+    if (this._kuyruk.length) this._planla(0);
+    return this.sinif;
   }
 }
 

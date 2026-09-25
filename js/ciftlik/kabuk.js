@@ -7,7 +7,7 @@
      Kim oynuyor? (çocuk sembolüne dokunur)
           ↓
      çiftlik (çocuğun dünyası; işler, istem, balonlar)
-          ↓  'Günü bitir' (alttaki ev): çiftlik ailesi aç kalan hayvanı besler,
+          ↓  'Günü bitir' (alttaki batan güneş): çiftlik ailesi aç kalan hayvanı besler,
           ↓  kuyruk boşalır
      Kim oynuyor? …
 
@@ -36,7 +36,7 @@
    ızgarası) → ciftlikAc(arkadas, {rol:'ziyaretci', kim: ben}). Dünya arkadaşın durumuyla
    kurulur; fare ziyaretçinin şapka renginde, sembol bayrağı ve üstteki rozet arkadaşın.
    Şeritte ve istemde yalnız ziyaretçi işleri (susamış bitkiye ziyaretSula, panoya çıkartma:
-   kancalar.hediyeAc). Alttaki ev düğmesi misafirde 'Eve dön': ziyaretçinin kendi çiftliği açılır.
+   kancalar.hediyeAc). Alttaki batan güneş düğmesi misafirde 'Eve dön': ziyaretçinin kendi çiftliği açılır.
 
    ANLATIM (anlatim.js): istem, iş başı, ızgara, 'Sen yokken'... ses/anlatim/ciftlik-*.mp3
    kayıtlıysa çalar, yoksa sessiz; cümle ekran okuyucu için aria-live alanına yazılır.
@@ -45,7 +45,10 @@
               kancalar, kancaKaydet(ad, fn). */
 
 import {saatKur} from './saat.js';
-import {YerelDepo, yerelDepolama, bellekDepolama, PIN_DESEN} from './depo.js';
+import {CiftlikDepo, yerelDepolama, bellekDepolama} from './depo.js';
+import {bulutTasima} from './bulut.js';
+import {API_KOK} from './api-adres.js';
+import {kurulumAc} from './kurulum.js';
 import {kimOynuyorAc} from './kimOynuyor.js';
 import {yansitKur} from './yansit.js';
 import {yakinlikKur, noktaIsleri, isSirala} from './yakinlik.js';
@@ -98,7 +101,8 @@ const KONU_ADI = { ceviz: 'Ceviz', bugday: 'Buğday', domates: 'Domates' };
 
 export async function kabukBaslat({ iskelet, deneme = false, depo = null, saat = null }) {
   saat ??= saatKur();
-  depo ??= new YerelDepo({ saat, depolama: deneme ? bellekDepolama() : yerelDepolama() });
+  // Çevrimiçi kayıt yalnız API kökü tanımlıysa (yayın ayarı) ve deneme açılışı değilse sunulur.
+  depo ??= new CiftlikDepo({ saat, depolama: deneme ? bellekDepolama() : yerelDepolama(), bulut: API_KOK && !deneme ? bulutTasima({ kok: API_KOK }) : null });
 
   const k = { ekran: null, oid: null, rol: 'sahip', kim: null, yansit: null, yakinlik: null, gorunus: null, kimEkrani: null, isAcik: false, panelAcik: false, bekleyenDurdur: false,
     isTutamak: null, kutlama: 0, sevgi: 0, durdurSay: 0 };
@@ -376,55 +380,10 @@ export async function kabukBaslat({ iskelet, deneme = false, depo = null, saat =
     k.ekran = 'kurulum';
     ekranKatmani.hidden = false;
     dunyaDurdur(true);
-    const kart = el('form', 'kurulum-kart');
-    kart.noValidate = true;
-    kart.append(el('h1', '', { textContent: 'Çiftçi Fare' }));
-    kart.append(el('p', 'kurulum-not', { textContent: 'Bu cihazda yeni bir sınıf kurulur. Kayıt yalnız bu cihazda tutulur; çocuk adı sorulmaz, her çocuk bir sembolle tanınır.' }));
-    const alan = (etiket, girdi) => { const l = el('label', 'kurulum-alan'); l.append(el('span', '', { textContent: etiket }), girdi); return l; };
-    const secim = (ad, secenekler, secili) => {
-      const f = el('fieldset', 'kurulum-secim');
-      f.append(el('legend', '', { textContent: ad.etiket }));
-      for (const [deger, yazi] of secenekler) {
-        const l = el('label');
-        const r = el('input', '', { type: 'radio', name: ad.ad, value: String(deger), checked: deger === secili });
-        l.append(r, el('span', '', { textContent: yazi }));
-        f.append(l);
-      }
-      return f;
-    };
-    const sayi = el('input', '', { type: 'number', min: '2', max: String(SINIR.ogrenci), value: '20', name: 'sayi', inputMode: 'numeric' });
-    kart.append(alan('Çocuk sayısı', sayi));
-    kart.append(secim({ ad: 'yas', etiket: 'Yaş grubu' }, [['3-4', '3-4 yaş'], ['5-6', '5-6 yaş']], '3-4'));
-    kart.append(secim({ ad: 'konu', etiket: 'Konu tohumu' }, KONU_TURLERI.map(t => [t, KONU_ADI[t] || t]), 'ceviz'));
-    kart.append(secim({ ad: 'unite', etiket: 'Ünite süresi' }, [[5, '1 hafta'], [10, '2 hafta'], [20, '4 hafta']], 10));
-    kart.append(secim({ ad: 'takvim', etiket: 'Takvim' }, [['okul-gunleri', 'Okul günleri'], ['her-gun', 'Her gün']], 'okul-gunleri'));
-    const pin = el('input', '', { type: 'password', name: 'pin', inputMode: 'numeric', autocomplete: 'new-password', minLength: 6, maxLength: 12 });
-    kart.append(alan('Öğretmen PIN’i (en az 6 rakam)', pin));
-    const uyari = el('p', 'kurulum-uyari', { role: 'alert' });
-    const kur = el('button', 'kurulum-dugme', { type: 'submit', textContent: 'Sınıfı kur' });
-    kart.append(uyari, kur);
-    kart.addEventListener('submit', async e => {
-      e.preventDefault();
-      const n = Math.round(Number(sayi.value));
-      if (!(n >= 2 && n <= SINIR.ogrenci)) { uyari.textContent = `Çocuk sayısı 2 ile ${SINIR.ogrenci} arasında olmalı.`; return; }
-      if (!PIN_DESEN.test(pin.value)) { uyari.textContent = 'PIN en az 6 rakam olmalı.'; return; }
-      const deger = ad => kart.querySelector(`input[name="${ad}"]:checked`)?.value;
-      kur.disabled = true;
-      try {
-        await depo.sinifKur({
-          ogrenciSayisi: n, yas: deger('yas'), konu: deger('konu'), uniteGun: Number(deger('unite')),
-          takvim: deger('takvim'), pin: pin.value
-        });
-        saat.tz(depo.sinif?.ayarlar?.tz);
-        kimGoster();
-      } catch (hata) {
-        console.error(hata);
-        uyari.textContent = 'Sınıf kurulamadı. Lütfen yeniden deneyin.';
-        kur.disabled = false;
-      }
+    k.kimEkrani = kurulumAc(ekranKatmani, {
+      depo,
+      bitti: () => { saat.tz(depo.sinif?.ayarlar?.tz); kimGoster(); }
     });
-    ekranKatmani.append(kart);
-    sayi.focus({ preventScroll: true });
   }
 
   /* ——— öğretmen: dişliye 2 sn basılı tut + PIN ——— */
@@ -463,7 +422,8 @@ export async function kabukBaslat({ iskelet, deneme = false, depo = null, saat =
     const ac = el('button', 'pin-ac', { type: 'submit', textContent: 'Aç' });
     const vazgec = el('button', 'pin-vazgec', { type: 'button', textContent: 'Vazgeç' });
     const dugmeler = el('div', 'pin-dugmeler'); dugmeler.append(vazgec, ac);
-    f.append(l, dugmeler);
+    const not = el('p', 'pin-not', { role: 'alert' });     // öğretmen içindir: kilit ve bağlantı yokluğu yazılır
+    f.append(l, not, dugmeler);
     kutu.append(f);
     iskelet.sayfa.append(kutu);
     const kapat = () => { kutu.remove(); };           // DOM'da PIN alanı kalmasın
@@ -474,6 +434,8 @@ export async function kabukBaslat({ iskelet, deneme = false, depo = null, saat =
       const tamam = await depo.pinDogrula(giris.value);
       ac.disabled = false;
       if (!tamam) {
+        not.textContent = depo.pinSonuc === 'kilitli' ? 'Çok fazla hatalı deneme. 15 dakika sonra yeniden deneyin.'
+          : depo.pinSonuc === 'ag' ? 'Sunucuya ulaşılamadı. İnternet bağlantısını denetleyin.' : '';
         giris.value = '';
         f.classList.remove('salla'); void f.offsetWidth; f.classList.add('salla');
         giris.focus();
@@ -535,7 +497,7 @@ export async function kabukBaslat({ iskelet, deneme = false, depo = null, saat =
       aktif: () => ({ oid: k.oid, rol: k.rol, kim: k.kim, ekran: k.ekran }),
       yenidenCiz, isBitti,
       birlikteBitir, eveGetir,
-      gunuBitir, kimOynuyor: kimGoster, ciftlikAc,
+      gunuBitir, kimOynuyor: kimGoster, ciftlikAc, kurulum: () => kurulumGoster(),
       duraklat: panelDurdur,
       isVarMi: () => !!(k.isTutamak || k.yakinlik?.yakin()?.is || k.yakinlik?.serit().length)
     };

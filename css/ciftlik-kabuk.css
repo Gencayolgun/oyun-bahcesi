@@ -54,8 +54,6 @@
  border-radius:34px;border:9px solid var(--renk,#d9714f);background:var(--krem);box-shadow:var(--golge);transition:transform .12s,opacity .3s}
 .kim-kart .kim-sembol{width:100%;height:100%;display:block}
 .kim-kart .kim-sembol svg{width:100%;height:100%;display:block}
-.kim-kart .kim-ad{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);max-width:86%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
- padding:2px 12px;border-radius:99px;background:#ffffffd9;color:var(--yesil-koyu);font:700 15px/1.3 system-ui,sans-serif}
 .kim-kart.oynadi{opacity:.42;filter:saturate(.35)}
 .kim-kart.onerilen{grid-column:span 2;grid-row:span 2;border-width:13px;box-shadow:0 0 0 8px #fff,0 0 0 14px #f2c14e70,var(--golge);animation:onerilen 2.4s ease-in-out infinite}
 .kim-kart:active{transform:scale(.95)}
@@ -78,6 +76,21 @@
 .kurulum-dugme,.pin-ac,.pin-vazgec{font:800 20px system-ui,sans-serif;padding:14px 26px;border-radius:18px;border:0;cursor:pointer;background:#5f8f4e;color:#fff;box-shadow:var(--golge)}
 .kurulum-dugme:disabled,.pin-ac:disabled{opacity:.6}
 .pin-vazgec{background:#e9e1c9;color:#34453b}
+/* Çevrimiçi kurulum (kurulum.js): üç seçenek, bağlama formu, sınıf kodu */
+.kurulum-secenekler{display:grid;gap:12px}
+.kurulum-secenek{display:grid;gap:4px;text-align:left;padding:16px 20px;border-radius:20px;border:2px solid #e3d9bd;background:#fff;cursor:pointer;
+ font:500 16px/1.35 system-ui,sans-serif;color:#5b6a60;box-shadow:var(--golge)}
+.kurulum-secenek strong{font:800 21px/1.2 system-ui,sans-serif;color:var(--yesil-koyu)}
+.kurulum-secenek:hover,.kurulum-secenek:focus-visible{border-color:#7fa86b;background:#f4f9ef}
+.kurulum-geri{justify-self:start;font:700 16px system-ui,sans-serif;padding:8px 16px;border-radius:14px;border:0;background:transparent;color:#5b6a60;cursor:pointer;text-decoration:underline}
+.kurulum-sinif-kod{margin:0;justify-self:center;font:800 54px/1 ui-monospace,monospace;letter-spacing:.14em;color:var(--yesil-koyu);
+ padding:16px 26px;border-radius:20px;background:#fff;border:3px dashed #d9cfb4;user-select:all}
+.panel-sinif-kod{margin:0;font-size:18px}
+.panel-sinif-kod strong{font:800 26px ui-monospace,monospace;letter-spacing:.12em;margin-left:6px}
+.panel-onay{display:grid;gap:10px;margin-top:10px}
+.panel-sinif-sil{background:#b0452c;color:#fff}
+.pin-not{margin:0;color:#b0452c;font-weight:700}
+.pin-not:empty{display:none}
 
 /* ——— öğretmen dişlisi ve PIN ——— */
 .ciftlik-disli{touch-action:none;user-select:none;-webkit-user-select:none}

@@ -223,7 +223,10 @@ export function ziyaretAc(baglam) {
   const arkadaslar = sinif.ogrenciler.filter(o => o.id !== oid);
   if (!arkadaslar.length) return null;
   const bugun = depo.bugun();
-  const sayilar = ziyaretSayilari(Object.fromEntries(arkadaslar.map(o => [o.id, depo.ciftlik(o.id)])), bugun);
+  // Çevrimiçi sınıfta arkadaşın çiftliği bu cihazda olmayabilir: sunucu özetindeki ziyaret günleri kullanılır.
+  const ozet = new Map(depo.sinifOzet().map(o => [o.oid, o]));
+  const belge = id => depo.ciftlik(id) || { ziyaretler: (ozet.get(id)?.ziyaretGunleri || []).map(gun => ({ gun })) };
+  const sayilar = ziyaretSayilari(Object.fromEntries(arkadaslar.map(o => [o.id, belge(o.id)])), bugun);
   const sira = ziyaretOner(arkadaslar.map(o => ({ oid: o.id, ziyaret: sayilar[o.id] })), { ben: oid, bugun });
   const bul = id => arkadaslar.find(o => o.id === id);
 

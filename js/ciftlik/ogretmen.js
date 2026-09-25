@@ -29,6 +29,8 @@ const KONU_ADI = { ceviz: 'Ceviz', bugday: 'Buğday', domates: 'Domates' };
 const UNITE_ADI = { 5: '1 hafta', 10: '2 hafta', 20: '4 hafta' };
 const TAKVIM_ADI = { 'okul-gunleri': 'Okul günleri', 'her-gun': 'Her gün' };
 const YAS_ADI = { '3-4': '3-4 yaş', '5-6': '5-6 yaş' };
+/* Çevrimiçi sınıfta öğretmen oturumu 8 saat geçerli; dolunca sunucu 401 döner. */
+const kayitHatasi = h => (h?.durum === 401 ? 'Öğretmen oturumu doldu. Paneli kapatıp dişliyle yeniden açın.' : 'Kaydedilemedi. Lütfen yeniden deneyin.');
 const EN_AZ = 2;                                         // sınıfta en az iki çocuk
 
 const el = (tag, cls, ek = {}) => { const e = document.createElement(tag); if (cls) e.className = cls; Object.assign(e, ek); return e; };
@@ -147,7 +149,7 @@ export function ogretmenPaneliAc(baglam) {
       ayarDurum.value = yama.konu && tur !== once.konu ? 'Kaydedildi. Yeni konu bugün başladı.' : 'Kaydedildi.';
     } catch (hata) {
       console.error(hata);
-      ayarDurum.value = 'Kaydedilemedi. Lütfen yeniden deneyin.';
+      ayarDurum.value = kayitHatasi(hata);
     }
     kaydet.disabled = false;
     uyariGuncelle();
@@ -176,7 +178,7 @@ export function ogretmenPaneliAc(baglam) {
       listeDurum.value = mesaj;
     } catch (hata) {
       console.error(hata);
-      listeDurum.value = 'Kaydedilemedi. Lütfen yeniden deneyin.';
+      listeDurum.value = kayitHatasi(hata);
     }
     listeCiz();
   };
@@ -257,6 +259,47 @@ export function ogretmenPaneliAc(baglam) {
   });
   yazdirD.addEventListener('click', () => yazdir(depo));
   listeCiz();
+
+  /* ——— sınıf: kayıt yeri, sınıf kodu (öteki cihazları bağlamak için), sınıfı kapat ——— */
+  const sb = bolum('panel-kayit', 'Sınıf');
+  const cevrimici = depo.kip?.() === 'bulut';
+  sb.append(el('p', 'panel-not', {
+    textContent: cevrimici
+      ? 'Kayıt çevrimiçi: tahta, tablet ve ev aynı çiftlikleri görür. Başka bir cihazı bağlamak için o cihazda “Bu cihazı bağla”yı seçip sınıf kodunu ve PIN’i girin.'
+      : 'Kayıt yalnız bu cihazda (internetsiz).'
+  }));
+  if (cevrimici && depo.kod) {
+    const kodSatir = el('p', 'panel-sinif-kod');
+    kodSatir.append(el('span', '', { textContent: 'Sınıf kodu: ' }), el('strong', '', { textContent: depo.kod }));
+    sb.append(kodSatir);
+  }
+  const kapatSinifD = el('button', 'pin-vazgec panel-sinif-kapat', { type: 'button', textContent: 'Sınıfı sil…' });
+  const onay = el('form', 'panel-onay', { hidden: true });
+  onay.noValidate = true;
+  const onayGiris = el('input', '', { type: 'text', name: 'onayKod', autocomplete: 'off', autocapitalize: 'characters', maxLength: 14 });
+  const onayEtiket = el('label', 'kurulum-alan');
+  onayEtiket.append(el('span', '', { textContent: `Bütün çiftlikler ${cevrimici ? 'sunucudan ve ' : ''}bu cihazdan silinir. Onaylamak için sınıf kodunu (${depo.kod || ''}) yazın.` }), onayGiris);
+  const onayD = el('button', 'pin-vazgec panel-sinif-sil', { type: 'submit', textContent: 'Evet, sınıfı sil' });
+  const sinifDurum = el('output', 'panel-durum');
+  sinifDurum.setAttribute('role', 'status');
+  onay.append(onayEtiket, onayD);
+  kapatSinifD.addEventListener('click', () => { onay.hidden = !onay.hidden; if (!onay.hidden) onayGiris.focus({ preventScroll: true }); });
+  onay.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (onayGiris.value.trim().toUpperCase() !== depo.kod) { sinifDurum.value = 'Sınıf kodu eşleşmedi.'; return; }
+    onayD.disabled = true;
+    try {
+      await depo.sinifKapat();
+      kapat();
+      baglam.kurulum?.();
+    } catch (hata) {
+      console.error(hata);
+      sinifDurum.value = 'Sınıf kapatılamadı. Lütfen yeniden deneyin.';
+      onayD.disabled = false;
+    }
+  });
+  sb.append(kapatSinifD, onay, sinifDurum);
+  kart.append(sb);
 
   kok.append(p);
   kapatD.focus({ preventScroll: true });

@@ -55,6 +55,8 @@ export const AVLU = { x0: 9, x1: 16, z0: 3, z1: 10, kapiZ0: 5.8, kapiZ1: 7.2 };
 export const KUMES_EVI = { x: 14.5, z: 8.5, w: 3, d: 3 };
 export const EV = { x: 0, z: 13.9, w: 5.4, d: 3.2 };
 export const AMBAR = { x: -12, z: 7, w: 4.6, d: 5.2 };
+/* Hasat rafının (ve yığınının) büyütmesi: tablette de seçilsin (bkz. Ambar). */
+export const RAF_OLCEK = 1.6;
 export const PARSEL_YERI = {
   konu: { x: 0, z: 0, en: 2.4 },
   t1: { x: -10, z: -3, en: 3.2 },
@@ -93,7 +95,7 @@ const DIKDORTGENLER = [
   [-3.2, 10.1, 3.2, 16],        // ev + veranda
   [2.9, 9.7, 5.4, 11.3],        // posta kutusu + pano
   [-3.7, 9.8, -2.3, 11.2],      // sembol bayrağı
-  [-14.9, 3.8, -8.4, 10.2],     // ambar + önündeki raf
+  [-14.9, 3.8, -7.6, 10.9],     // ambar + önündeki raf (ve doğusunda yere dizilen çuvallar)
   [7.4, 2.4, 16.7, 10.7],       // avlu + çitin dışındaki yemlik, suluk, folluk
   [-12.3, -5.3, -3.7, -.7],     // tarla parselleri t1, t2
   [-28.6, 1.9, -24.4, 6.1]      // saman yığını (çitin dışında)
@@ -300,7 +302,13 @@ export function ciftlikMekani(a) {
   const yukselti = (x, z, rx, rz, ust, ek) => { yukseltiler.push({ x, z, rx, rz, ust, ...(ek || {}) }); a.yukseltiEkle(x, z, rx, rz, ust, ek); };
   const hareketliGrup = (x, z, ry = 0, ad = '') => { const g = k.grup(x, z, ry); g.userData.hareketli = true; g.name = ad; return g; };
   /* Statik yapı: kur(g) içinde yerel koordinatla çizilir, sonra tek mesh'e iner. */
-  const yapi = (ad, x, z, ry, kur) => { const g = k.grup(x, z, ry); g.name = ad; kur(g); birlestir(a, g, { ad }); return g; };
+  /* kur(g) bir dizi döndürürse onlar kendi mesh'ine inecek alt gruplardır (birlestir korunan). */
+  const yapi = (ad, x, z, ry, kur) => {
+    const g = k.grup(x, z, ry); g.name = ad;
+    const korunan = kur(g);
+    birlestir(a, g, { ad, korunan: Array.isArray(korunan) ? korunan : [] });
+    return g;
+  };
 
   /* ——— Zemin boyaları: yollar, avlu, veranda önü ——— */
   /* Zemin boyası: arazinin bir tık üstünde ve derinlik öncelikli (okulun GPU'sunda benek benek titremesin). */
@@ -631,12 +639,16 @@ export function ciftlikMekani(a) {
   // yumurta sepetleri). Kamera kuzeye sabit bakar: raf önden görünür, yığın yan yana dizilir
   // (doğu duvarına dayalıyken raf kameraya ucundan bakıyor, çuvallar birbirinin ardında kalıyordu).
   // Yerel eksen: +x ön (güney), z rafın boyu (doğu-batı); rafa sığmayan çuvallar doğusunda yerde.
-  const RAF_X = AMBAR.x + AMBAR.w / 2 - 1.1, RAF_Z = AMBAR.z + AMBAR.d / 2 + .3;
+  // Raf (içindeki yığınla birlikte) RAF_OLCEK kat büyük: gerçek boyda çuval ve sepetler tablette
+  // (1024×768) 10-15 piksele iniyordu, çocuk hasadını seçemiyordu. Büyüyen raf saçağa değmesin
+  // diye duvardan biraz öne (güneye) alındı. yansit.js yığını rafın yerel ekseninde kurar.
+  const RAF_X = AMBAR.x + AMBAR.w / 2 - 1.1, RAF_Z = AMBAR.z + AMBAR.d / 2 + .58;
   const raf = hareketliGrup(RAF_X, RAF_Z, -Math.PI / 2, 'ambar-raf');
+  raf.scale.setScalar(RAF_OLCEK);
   for (const [x, z] of [[-.22, -.62], [-.22, .62], [.22, -.62], [.22, .62]]) k.blok(raf, R.tahtaKoyu, x, .75, z, .08, 1.5, .08);
   for (const y of [.12, .62, 1.12]) k.blok(raf, R.tahta, 0, y, 0, .54, .06, 1.34);
   k.blok(raf, R.tahtaKoyu, -.24, 1.5, 0, .06, .06, 1.34);
-  a.kutuEngel(RAF_X, RAF_Z, 1.36, .56, 0, undefined, false);
+  a.kutuEngel(RAF_X, RAF_Z, 1.36 * RAF_OLCEK, .56 * RAF_OLCEK, 0, undefined, false);
 
   /* ——— Kümes ve avlu (x 9..16, z 3..10) ———
      Tavuklar avludan çıkmasın: kapı kapalı. Fare çitin üstünden zıplayıp
@@ -749,8 +761,12 @@ export function ciftlikMekani(a) {
 
   /* ——— Dede Ceviz (10, -8): yaşlı, kalın gövdeli, geniş taçlı, baştan olgun ———
      Taç alçak ve geniş: yüksek, eğik kamera tacı görsün, cevizler (yeşil
-     kabuklu) tacın altında, dal uçlarında sallansın. */
+     kabuklu) tacın altında, dal uçlarında sallansın. Taç ayrı bir alt grupta
+     (dede-tac) kendi mesh'ine iner: fare ağacın altına ya da yanına gelince
+     kameraya çok yaklaşan taç tek başına solar (bkz. Örten yapılar). */
+  const dedeTac = new THREE.Group(); dedeTac.name = 'dede-tac';
   const dedeYapi = yapi('dede-ceviz', 10, -8, .3, g => {
+    g.add(dedeTac);
     k.sil(g, R.kabuk, 0, .95, 0, .62, 1.9, 9, .7);
     for (let i = 0; i < 5; i++) {                                             // kök çıkıntıları
       const ac = i / 5 * Math.PI * 2 + .4;
@@ -762,8 +778,9 @@ export function ciftlikMekani(a) {
       k.cubuk(g, R.kabuk, [Math.cos(ac) * .2, 1.7, Math.sin(ac) * .2], [Math.cos(ac) * u, 2.55, Math.sin(ac) * u], .15, 6);
     }
     const tac = [[0, 3.35, 0, 2.5, 1.2], [1.8, 2.95, .7, 1.6, .95], [-1.8, 3.05, -.3, 1.7, 1], [.3, 3.0, -1.8, 1.6, .95], [-.5, 2.9, 1.8, 1.6, .9], [.3, 4.15, .2, 1.5, .85], [1.3, 3.5, -1.2, 1.2, .8]];
-    tac.forEach(([x, y, z, r, h], i) => k.kure(g, [R.yaprak, R.yaprakKoyu, R.yaprakAcik][i % 3], x, y, z, r, h, r, 1));
+    tac.forEach(([x, y, z, r, h], i) => k.kure(dedeTac, [R.yaprak, R.yaprakKoyu, R.yaprakAcik][i % 3], x, y, z, r, h, r, 1));
     // Meyveler (püskül → yeşil kabuk → çatlak kabuk) yansit.js'te, çiftliğin durumuna göre (bitki3b.js dedeParcalari).
+    return [dedeTac];
   });
   a.engelEkle(10, -8, .6, 0);
 
@@ -793,8 +810,9 @@ export function ciftlikMekani(a) {
   });
   { let y = ZEMIN; for (const [w, d, h] of [[2.2, 2.8, .55], [1.6, 1.8, .55], [.9, 1.0, .55]]) { y += h; yukselti(-26.5, 4, w / 2, d / 2, y, { kutu: true }); } }
   if (a.itilebilir) {
-    a.itilebilir({ x: -8.4, z: 10.2, r: .5, tip: 'balya', renk: R.saman, ikinci: R.samanKoyu, yon: .4 });
-    a.itilebilir({ x: -6.6, z: 11.3, r: .5, tip: 'balya', renk: R.saman, ikinci: R.samanKoyu, yon: 1.3 });
+    // Balyalar hasat rafının doğusundaki çuval sırasına değmesin (raf büyüdü: RAF_OLCEK).
+    a.itilebilir({ x: -7.3, z: 11.5, r: .5, tip: 'balya', renk: R.saman, ikinci: R.samanKoyu, yon: .4 });
+    a.itilebilir({ x: -6.1, z: 12.5, r: .5, tip: 'balya', renk: R.saman, ikinci: R.samanKoyu, yon: 1.3 });
     a.itilebilir({ x: 4.5, z: 3.6, r: .36, tip: 'top', renk: 0xe8636b, ikinci: 0xf6f1e2 });
   }
 
@@ -822,21 +840,46 @@ export function ciftlikMekani(a) {
      çizilir; her karede kameradan farenin gövdesine, iki yanına ya da
      ayağına giden ışınlardan biri yapıya çarpıyorsa yapı yumuşakça
      saydamlaşır (.3), çarpmıyorsa geri gelir (tutamak.ortucuGuncelle).
-     Opaklık 1'de görünüşte fark yok; çizim çağrısı sayısı değişmez. */
+     Opaklık 1'de görünüşte fark yok; çizim çağrısı sayısı değişmez.
+
+     DEDE CEVİZ'İN TACI ayrıca solar: taç alçak ve geniş, kamera ise yerden
+     ~6 birim yukarıda. Fare ağacın altına (hasat noktası tacın altında) ya da
+     yanına gelince taç kameranın hemen önünde kalıyor, ekranın yarısını
+     kaplıyordu (fare görünse bile çocuk etrafı göremiyordu). Taç kendi
+     malzemesiyle çizilir (ortucu.tac); fare tacın izdüşümündeyse ya da kamera
+     tacın kutusuna TAC.giris'ten yakınsa taç TAC.soluk opaklığa iner
+     (derinlik yazmaz: arkasındaki fare, dallar ve cevizler seçilir), kamera
+     TAC.cikis'tan uzaklaşınca geri gelir. Gövde ve dallar yerinde durur:
+     çocuk ağacı kaybetmez, hasat için gövdeyi görür. */
+  const TAC = { soluk: .2, giris: 4.6, cikis: 5.3, pay: .4 };
   const ortuculer = [];
-  for (const [ad, g] of [['ev', evYapi], ['ambar', ambarYapi], ['kumes', kumesYapi], ['dede-ceviz', dedeYapi]]) {
-    const meshler = [], malzemeler = new Set();
+  for (const [ad, g, tac] of [['ev', evYapi], ['ambar', ambarYapi], ['kumes', kumesYapi], ['dede-ceviz', dedeYapi, dedeTac]]) {
+    const meshler = [], malzemeler = new Set(), tacMalzemeler = new Set();
     g.traverse(o => { if (o.isMesh) meshler.push(o); });
     for (const m of meshler) {
-      const e = m.material, ek = { roughness: e.roughness, metalness: e.metalness, transparent: true, name: 'ortucu-' + ad };
+      let tacta = false;
+      for (let p = m.parent; p && tac && !tacta; p = p.parent) tacta = p === tac;
+      const e = m.material, ek = { roughness: e.roughness, metalness: e.metalness, transparent: true, name: 'ortucu-' + ad + (tacta ? '-tac' : '') };
       if (e.vertexColors) ek.vertexColors = true;
       if (e.side !== THREE.FrontSide) ek.side = e.side;
       if (e.flatShading) ek.flatShading = true;
       m.material = a.mal(e.vertexColors ? 0xffffff : e.color.getHex(), ek);
-      malzemeler.add(m.material);
+      (tacta ? tacMalzemeler : malzemeler).add(m.material);
     }
     g.updateMatrixWorld(true);
-    ortuculer.push({ ad, meshler, malzemeler: [...malzemeler], kutu: new THREE.Box3().setFromObject(g), opak: 1 });
+    const o = { ad, meshler, malzemeler: [...malzemeler], kutu: new THREE.Box3().setFromObject(g), opak: 1 };
+    if (tac) {
+      // Tacın yerdeki izdüşümü: gövde ekseni çevresinde bir daire (en dıştaki yaprağa kadar).
+      const merkez = new THREE.Vector3().setFromMatrixPosition(g.matrixWorld), v = new THREE.Vector3();
+      let yaricap = 0;
+      tac.traverse(m => {
+        if (!m.isMesh) return;
+        const P = m.geometry.attributes.position;
+        for (let i = 0; i < P.count; i++) { v.fromBufferAttribute(P, i).applyMatrix4(m.matrixWorld); yaricap = Math.max(yaricap, Math.hypot(v.x - merkez.x, v.z - merkez.z)); }
+      });
+      o.tac = { malzemeler: [...tacMalzemeler], kutu: new THREE.Box3().setFromObject(tac), merkez: { x: merkez.x, z: merkez.z }, yaricap, opak: 1, yakin: false };
+    }
+    ortuculer.push(o);
   }
   const isin = new THREE.Raycaster(), ray = new THREE.Ray(), gK = new THREE.Vector3(), gF = new THREE.Vector3(), gP = new THREE.Vector3();
 
@@ -889,6 +932,17 @@ export function ciftlikMekani(a) {
         o.opak = ani ? hedef : o.opak + (hedef - o.opak) * Math.min(1, dt * 7);
         if (Math.abs(o.opak - hedef) < .01) o.opak = hedef;
         for (const m of o.malzemeler) m.opacity = o.opak;
+        const t = o.tac;
+        if (!t) continue;
+        // Taç: fare izdüşümünde ya da kamera yakınında → soluk (giriş/çıkış eşiği farklı: titremez).
+        if (kamera && fare) {
+          const altinda = Math.hypot(fare.x - t.merkez.x, fare.z - t.merkez.z) < t.yaricap + TAC.pay;
+          t.yakin = altinda || t.kutu.distanceToPoint(gK) < (t.yakin ? TAC.cikis : TAC.giris);
+        } else t.yakin = false;                                              // 1. şahıs: taç opak
+        const th = Math.min(hedef, t.yakin ? TAC.soluk : 1);
+        t.opak = ani ? th : t.opak + (th - t.opak) * Math.min(1, dt * 7);
+        if (Math.abs(t.opak - th) < .01) t.opak = th;
+        for (const m of t.malzemeler) { m.opacity = t.opak; m.depthWrite = t.opak > .99; }
       }
     },
     /* Her kare (giris.js çağırır): avlu güvenliği. Tavuklar fiziksel

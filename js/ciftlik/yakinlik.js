@@ -12,6 +12,8 @@
      Sahibin gördüğünden bu yana büyüyen bitkinin üstünde '?' balonu; bitki
      kameranın önünde ama ekranın dışındaysa (verandadan açılış) '?' ekranın
      kenarına iğnelenir. Balonlar üst düğmelerin altında, alt şeridin üstünde kalır.
+     Ekranda üst üste binen balonlar (kümesin yem, su, yumurta balonları) yan yana
+     dizilir (balonlariAyir: saf, ekran uzayında).
    - İŞ ŞERİDİ: oturum başında öncelik sırasıyla en çok N iş (tahtada 2,
      tablette 3; sınıf ayarı tahtaIs). Yapılan iş şeritten düşer; şerit
      boşalınca kabuk 'Günü bitir'i nabız gibi attırır. Sayaç, puan yok.
@@ -113,6 +115,55 @@ export function isSirala({ isler }) {
   };
   const sira = ['capa', 'ek', 'sula', 'ot', 'destek', 'hasat', 'yem', 'suluk', 'yumurta', 'ziyaretSula', 'hediye'];
   return tum.map((is, i) => ({ is, i })).sort((a, b) => derece(a.is) - derece(b.is) || sira.indexOf(a.is.tur) - sira.indexOf(b.is.tur) || a.i - b.i).map(x => x.is);
+}
+
+/**
+ * Saf: ekranda üst üste binen balonları YAN YANA dizer (izdüşüm ve güvenli alandan sonra).
+ * Kümes çevresinde yem, su ve yumurta balonları neredeyse aynı noktaya düşüyordu (kamera kuzeye
+ * sabit: dünyada ardı ardına duran noktalar ekranda üst üste gelir). Kutuları (aralık payıyla)
+ * kesişen balonlar kümelenir; küme, üyelerin ekrandaki soldan sağa sırasıyla, ortalama x'lerinin
+ * çevresinde ve en üstteki balonun hizasında (sivri uçlar aşağıda, nesnelerin üstünde) dizilir.
+ * Dizi kabın yanlarından taşmaz. Dizilen küme başka bir balona değerse kümeler birleşir.
+ * @param liste  [{id, x, y, boy}]: x balonun alt ortası (sivri ucu), y alt kenarı, boy kare kenarı (px)
+ * @param W      kabın genişliği (px; 0: yatay sınır yok)
+ * @param onceki önceki karenin kümeleri (id → küme anahtarı): birlikte duranlar biraz daha
+ *               geniş payla birlikte kalır (eşikte titreyip bir ayrılıp bir birleşmesinler)
+ * @returns Map id → {x, y, kume}  (kume: kümenin anahtarı, tek balonda kendi id'si)
+ */
+export function balonlariAyir(liste, { W = 0, yan = 14, aralik = 10, tut = 18, onceki = null } = {}) {
+  const diz = uyeler => {
+    const sirali = [...uyeler].sort((a, b) => a.x - b.x || a.sira - b.sira);
+    const genislik = sirali.reduce((t, b) => t + b.boy, 0) + aralik * (sirali.length - 1);
+    const y = Math.min(...sirali.map(b => b.y));
+    let sol = sirali.reduce((t, b) => t + b.x, 0) / sirali.length - genislik / 2;
+    if (W) sol = Math.max(yan, Math.min(sol, W - yan - genislik));
+    const yer = [];
+    let x = sol;
+    for (const b of sirali) { yer.push({ b, x: x + b.boy / 2 }); x += b.boy + aralik; }
+    return { uyeler: sirali, yer, sol, sag: sol + genislik, ust: y - Math.max(...sirali.map(b => b.boy)), alt: y, y };
+  };
+  let kumeler = liste.map((b, sira) => diz([{ ...b, sira }]));
+  const eskiBirlikte = (a, b) => !!onceki && a.uyeler.some(u => b.uyeler.some(v => onceki.get(u.id) != null && onceki.get(u.id) === onceki.get(v.id)));
+  const degiyor = (a, b) => {
+    const pay = aralik + (eskiBirlikte(a, b) ? tut : 0);
+    return a.sol < b.sag + pay && b.sol < a.sag + pay && a.ust < b.alt + pay && b.ust < a.alt + pay;
+  };
+  for (let birlesti = true; birlesti && kumeler.length > 1;) {
+    birlesti = false;
+    dis: for (let i = 0; i < kumeler.length; i++) for (let j = i + 1; j < kumeler.length; j++) {
+      if (!degiyor(kumeler[i], kumeler[j])) continue;
+      const k = diz([...kumeler[i].uyeler, ...kumeler[j].uyeler]);
+      kumeler = kumeler.filter((_, n) => n !== i && n !== j).concat([k]);
+      birlesti = true;
+      break dis;
+    }
+  }
+  const sonuc = new Map();
+  for (const k of kumeler) {
+    const anahtar = k.uyeler.map(u => u.id).sort().join('+');
+    for (const { b, x } of k.yer) sonuc.set(b.id, { x, y: k.y, kume: anahtar });
+  }
+  return sonuc;
 }
 
 const el = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
@@ -217,7 +268,7 @@ export function yakinlikKur({ istemYeri, seritYeri, balonYeri, sahne, zemin = .5
   }
 
   /** Her kare: en yakın işli nokta → istem; balonların ekran yeri. */
-  function kare() {
+  function kare(t, dt = 1 / 60) {
     const s = sahne();
     if (!s) return;
     const p = s.nerede();
@@ -237,20 +288,39 @@ export function yakinlikKur({ istemYeri, seritYeri, balonYeri, sahne, zemin = .5
     }
     // Kabın boyu karede BİR kez, yazmalardan önce okunur (her balonda okumak düzeni zorlardı).
     alanW = balonYeri?.clientWidth || 0; alanH = balonYeri?.clientHeight || 0;
+    const gorunen = [];
     for (const [id, b] of balonlar) {
       const n = noktaTanim(id);
       let ekran = s.izdus(n.balon.x, zemin + n.balon.y, n.balon.z);
       let kenarda = false;
+      const boy = son.surpriz[id] ? 86 : 76;
       if (!ekran.gorunur && son.surpriz[id]) {
         const k = kenaraIgne(s, n, ekran);
         if (k) { ekran = k; kenarda = true; }
-      } else if (ekran.gorunur) ekran = guvenliAlan(ekran, son.surpriz[id] ? 86 : 76);
+      } else if (ekran.gorunur) ekran = guvenliAlan(ekran, boy);
       const gizli = !ekran.gorunur || id === yakinNokta || !etkin;
       if (gizli !== b.el.hidden) b.el.hidden = gizli;
       if (kenarda !== b.el.classList.contains('kenarda')) b.el.classList.toggle('kenarda', kenarda);
-      if (!gizli) b.el.style.transform = `translate3d(${ekran.x.toFixed(1)}px, ${ekran.y.toFixed(1)}px, 0) translate(-50%, -100%)`;
+      if (gizli) { b.kaydir = null; continue; }
+      gorunen.push({ id, b, x: ekran.x, y: ekran.y, boy });
+    }
+    // Üst üste binenler yan yana (balonlariAyir). Kayma yumuşakça uygulanır: küme kurulup
+    // dağılırken balonlar sıçramaz, kayar; yeni beliren balon hemen yerinde.
+    const ayrik = balonlariAyir(gorunen, { W: alanW, onceki: sonKume });
+    sonKume = new Map();
+    const oran = Math.min(1, Math.max(0, dt) * 12);
+    for (const g of gorunen) {
+      const hedef = ayrik.get(g.id);
+      sonKume.set(g.id, hedef.kume);
+      const hx = hedef.x - g.x, hy = hedef.y - g.y;
+      const k = g.b.kaydir || (g.b.kaydir = { x: hx, y: hy });
+      k.x += (hx - k.x) * oran; k.y += (hy - k.y) * oran;
+      if (Math.abs(hx - k.x) < .5) k.x = hx;
+      if (Math.abs(hy - k.y) < .5) k.y = hy;
+      g.b.el.style.transform = `translate3d(${(g.x + k.x).toFixed(1)}px, ${(g.y + k.y).toFixed(1)}px, 0) translate(-50%, -100%)`;
     }
   }
+  let sonKume = null;
 
   /* Sabah sürprizi '?' balonu AÇILIŞTA da görünsün: verandadan bakınca konu köşesi ekranın
      üst kenarında, balonu kenarın dışında kalıyor. Noktası kameranın ÖNÜNDE ama ekranın

@@ -9,8 +9,10 @@
      sırayı değiştirir.
    - Kartların yeri HER GÜN AYNI (sınıf listesi sırası): çocuk sembolünü hep
      aynı yerde bulur. Sıralama, rakam, puan YOK; kartta evre ikonu yok.
-   - Ad yalnız öğretmenin bu cihaza yazdığı adlardan ('ciftci-adlar:{KOD}')
-     küçük bir altyazı olarak gelir; sunucuya gitmez. */
+   - Kartta çocuğun ADI YOK (ne yazı ne aria-label): tahtada bütün sınıf
+     görür, çocuk kendini sembolünden tanır. Öğretmenin bu cihaza yazdığı
+     adlar ('ciftci-adlar:{KOD}') yalnız öğretmen panelinde ve yazdırılan
+     'sembol ↔ ad' listesinde görünür. Kartın adı sembolün adıdır. */
 
 import {sembolSvg, sembolAdi} from './semboller.js';
 import {siraOner} from './sira.js';
@@ -23,7 +25,7 @@ const el = (tag, cls, ek = {}) => { const e = document.createElement(tag); if (c
 /**
  * Izgarayı açar.
  * @param kok   ekranın konacağı kap
- * @param depo  depo.js arayüzü (sinifOzet, bugunOynayanlar, adlar, bugun)
+ * @param depo  depo.js arayüzü (sinifOzet, bugunOynayanlar, bugun)
  * @param sec   (oid) => {} çocuk seçilince
  * @returns {el, yenile(), kapat(), onerilen()}
  */
@@ -42,7 +44,6 @@ export function kimOynuyorAc(kok, { depo, sec }) {
   function yenile() {
     const ozet = depo.sinifOzet();
     const oynayanlar = depo.bugunOynayanlar();
-    const adlar = depo.adlar();
     onerilen = siraOner(ozet, oynayanlar, depo.bugun());
     izgara.replaceChildren(...ozet.map(o => {
       const kart = el('button', 'kim-kart');
@@ -51,14 +52,12 @@ export function kimOynuyorAc(kok, { depo, sec }) {
       kart.dataset.oid = o.oid;
       kart.dataset.sembol = o.sembol;
       kart.style.setProperty('--renk', o.renk);
-      const ad = adlar[o.oid];
-      kart.setAttribute('aria-label', ad ? `${sembolAdi(o.sembol)}, ${ad}` : sembolAdi(o.sembol));
+      kart.setAttribute('aria-label', sembolAdi(o.sembol));
       if (oynayanlar.includes(o.oid)) kart.classList.add('oynadi');
       if (o.oid === onerilen) kart.classList.add('onerilen');
       const resim = el('span', 'kim-sembol');
       resim.innerHTML = sembolSvg(o.sembol);
       kart.append(resim);
-      if (ad) kart.append(el('span', 'kim-ad', { textContent: ad }));   // yalnız bu cihazdaki ad (öğretmen için)
       kart.addEventListener('click', () => sec?.(o.oid));
       return kart;
     }));

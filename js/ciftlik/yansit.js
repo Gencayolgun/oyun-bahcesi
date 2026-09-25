@@ -35,13 +35,14 @@ import {AVLU, PARSEL_YERI} from './mekan.js';
 import {izlerKur} from './ziyaret.js';
 
 /* Yığın yerleri (ambar rafının yerel koordinatı; raf ~.54 derin, 1.34 uzun).
-   Raf katları y .12 / .62 / 1.12 (üst yüzeyleri +.03). */
+   Raf katları y .12 / .62 / 1.12 (üst yüzeyleri +.03). Raf grubu dünyada
+   büyütülür (mekan.js RAF_OLCEK): yığın onunla birlikte büyür, yerler aynı kalır. */
 const RAF = { alt: .15, orta: .65, ust: 1.15 };
 const CAP = { cuval: 28, domates: 20, ceviz: 22, yumurta: 22 };
 
 function cuvalYerleri() {
   const l = [];
-  for (const x of [.11, -.11]) for (let i = 0; i < 6; i++) l.push([x, RAF.alt, -.55 + i * .22]);
+  for (const x of [.125, -.125]) for (let i = 0; i < 6; i++) l.push([x, RAF.alt, -.55 + i * .22]);
   for (const kat of [0, 1]) for (const x of [.22, -.02]) for (let i = 0; i < 4; i++) {
     l.push([x + kat * .01, kat * .22, -.98 - i * .23 - kat * .1]);
   }
@@ -188,7 +189,8 @@ export function yansitKur({ arac, tutamak, azHareket = false }) {
     ornekCiz(arac, g, ucanParcalar(tur), { ad: 'ucan-hasat' });
     const uzak = Math.hypot(b.x - a.x, b.z - a.z);
     ucusSay++;
-    ucanlar.push({ g, t: 0, sure: Math.min(1.6, .8 + uzak / 40), a, b: { x: b.x, y: b.y + RAF.orta + .3, z: b.z }, yuk: 1.6 + uzak * .12 });
+    const olcek = tutamak.raf.scale.y;                            // raf büyütülmüş olabilir (mekan.js RAF_OLCEK)
+    ucanlar.push({ g, t: 0, sure: Math.min(1.6, .8 + uzak / 40), a, b: { x: b.x, y: b.y + (RAF.orta + .3) * olcek, z: b.z }, yuk: 1.6 + uzak * .12 });
   }
   function ucusKare(dt) {
     for (let i = ucanlar.length - 1; i >= 0; i--) {
@@ -216,26 +218,26 @@ export function yansitKur({ arac, tutamak, azHareket = false }) {
     ornekTemizle(hasatG);
     const L = [];
     cuvalYerleri().slice(0, n.cuval).forEach(([x, y, z], i) => {
-      L.push({ g: 'kure1', r: 0xd8c393, p: [x, y + .125, z], don: i * .7, boy: [.1, .13, .09] });
-      L.push({ g: 'sap', r: 0xc9b07a, p: [x, y + .23, z], boy: [.034, .06, .034] });
-      L.push({ g: 'kure0', r: 0x8a6a3c, p: [x, y + .245, z], boy: [.04, .012, .04] });
+      L.push({ g: 'kure1', r: 0xd8c393, p: [x, y + .155, z], don: i * .7, boy: [.12, .16, .11] });
+      L.push({ g: 'sap', r: 0xc9b07a, p: [x, y + .29, z], boy: [.04, .07, .04] });
+      L.push({ g: 'kure0', r: 0x8a6a3c, p: [x, y + .31, z], boy: [.048, .014, .048] });
     });
     if (n.domates) {
       L.push({ g: 'kutu', r: 0xb88a5a, p: [0, RAF.orta, -.33], boy: [.42, .12, .52] });
       domatesYerleri().slice(0, n.domates).forEach(([x, y, z], i) => {
-        L.push({ g: 'kure1', r: BR.domatesKirmizi, p: [x, y, z], don: i, boy: [.055, .05, .055], mal: 'parlak' });
+        L.push({ g: 'kure1', r: BR.domatesKirmizi, p: [x, y, z], don: i, boy: [.06, .055, .06], mal: 'parlak' });
         L.push({ g: 'yildiz', r: BR.canak, p: [x, y + .045, z], don: i, boy: [.03, .03, .03] });
       });
     }
     if (n.ceviz) {
-      L.push({ g: 'sepet', r: 0x9c7148, p: [0, RAF.orta, .33], boy: [.2, .13, .2] });
-      L.push({ g: 'disk', r: 0x8a6440, p: [0, RAF.orta, .33], boy: [.16, .01, .16] });
-      yiginYerleri(0, .33, RAF.orta + .05, .12, .055).slice(0, n.ceviz).forEach(([x, y, z], i) => L.push({ g: 'kure0', r: i % 3 ? BR.ceviz : 0x7a5a34, p: [x, y, z], don: i, boy: [.045, .04, .045] }));
+      L.push({ g: 'sepet', r: 0x9c7148, p: [0, RAF.orta, .33], boy: [.23, .14, .23] });
+      L.push({ g: 'disk', r: 0x8a6440, p: [0, RAF.orta, .33], boy: [.19, .01, .19] });
+      yiginYerleri(0, .33, RAF.orta + .05, .14, .062).slice(0, n.ceviz).forEach(([x, y, z], i) => L.push({ g: 'kure0', r: i % 3 ? BR.ceviz : 0x7a5a34, p: [x, y, z], don: i, boy: [.054, .048, .054] }));
     }
     if (n.yumurta) {
-      L.push({ g: 'sepet', r: 0xb08850, p: [0, RAF.ust, -.2], boy: [.2, .12, .2] });
-      L.push({ g: 'disk', r: 0x9a7444, p: [0, RAF.ust, -.2], boy: [.16, .01, .16] });
-      yiginYerleri(0, -.2, RAF.ust + .06, .12, .06).slice(0, n.yumurta).forEach(([x, y, z], i) => L.push({ g: 'kure1', r: i % 4 === 1 ? 0xe2c29a : 0xf5ecdc, p: [x, y, z], don: i, yon: yonAl(i, .4), boy: [.035, .045, .035] }));
+      L.push({ g: 'sepet', r: 0xb08850, p: [0, RAF.ust, -.2], boy: [.24, .13, .24] });
+      L.push({ g: 'disk', r: 0x9a7444, p: [0, RAF.ust, -.2], boy: [.19, .01, .19] });
+      yiginYerleri(0, -.2, RAF.ust + .065, .14, .07).slice(0, n.yumurta).forEach(([x, y, z], i) => L.push({ g: 'kure1', r: i % 4 === 1 ? 0xe2c29a : 0xf5ecdc, p: [x, y, z], don: i, yon: yonAl(i, .4), boy: [.043, .056, .043] }));
     }
     if (L.length) ornekCiz(arac, hasatG, L, { ad: 'ambar-yigin' });
     son.ambar = n;

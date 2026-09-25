@@ -114,10 +114,16 @@ export function isSvg(is, { boy } = {}) {
 export const isAdi = is => IS_ADLARI[is?.tur] || 'İş';
 
 /* Düğme simgeleri */
+/* 'Günü bitir': akşam oluyor. Güneş tepenin ardına batıyor, gökte hilal ay ve yıldızlar.
+   Ev resmi DEĞİL: üstteki 'fareyi verandaya getir' düğmesi ev; çocuk ikisini karıştırıyordu. */
 export const GUNU_BITIR_SVG = `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">${G(
-  '<path d="M60 14 12 54h14v50h68V54h14z" fill="#f3e7cc"/><path d="M12 54 60 14l48 40" fill="none" stroke="#c2553c" stroke-width="10"/>' +
-  '<path d="M50 104V76h20v28z" fill="#8a5a36"/><path d="M78 30h12v18L78 38z" fill="#b46a4c"/>' +
-  '<circle cx="90" cy="84" r="18" fill="#f6c12d"/><path d="M84 76q14 2 8 18-10-4-8-18z" fill="#fff8d8" stroke="none"/>')}</svg>`;
+  '<circle cx="60" cy="60" r="50" fill="#4a5f96"/>' +
+  '<path d="M60 44v-9M43 51l-7-6M77 51l7-6" fill="none" stroke="#f6c12d" stroke-width="5"/>' +
+  '<path d="M36 78a24 24 0 0 1 48 0z" fill="#f2a13a"/>' +
+  '<path d="M12 74q24-12 48-2t48 2A50 50 0 0 1 12 74z" fill="#6f9e56"/>' +
+  '<path d="M38 18a13 13 0 1 0 0 26 16 16 0 0 1 0-26z" fill="#fff3c4" stroke-width="3"/>' +
+  '<path d="M88 20l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" fill="#fff3c4" stroke-width="2.5"/>' +
+  '<path d="M100 42l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#fff3c4" stroke-width="2"/>')}</svg>`;
 export const DISLI_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3m0 13v3M4.6 4.6l2.1 2.1m10.6 10.6 2.1 2.1M2.5 12h3m13 0h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/><circle cx="12" cy="12" r="6.6"/></svg>';
 /* Sabah sürprizi balonu: soru işareti (çizim; yazı değil) + filiz. */
 export const SURPRIZ_SVG = `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">${G(
